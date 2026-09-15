@@ -13,6 +13,10 @@ html,body{height:100%}
 body{background:#0a0a0a;color:#fff;font-family:'Space Grotesk','Segoe UI',sans-serif;overflow:hidden;height:100vh;height:100dvh;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 #canvas{flex:1;display:block;touch-action:none}
 .controls{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;z-index:10;border-top:1px solid rgba(255,255,255,.08);flex-wrap:wrap;justify-content:center}
+body.auto-hide .controls{transform:translateY(120%);will-change:transform}
+.hover-zone{position:fixed;left:0;right:0;bottom:0;height:24px;z-index:8}
+.reveal-hint{width:44px;height:4px;border-radius:2px;background:rgba(255,255,255,.3);margin:9px auto 0;pointer-events:none;box-shadow:0 0 10px rgba(255,255,255,.2);transition:opacity .3s}
+.controls-open .reveal-hint{opacity:0}
 .controls label{font-size:12px;color:#aaa;cursor:pointer;display:flex;align-items:center;gap:6px}
 .controls input[type=range]{width:80px;accent-color:#fff}
 .controls input[type=color]{width:28px;height:28px;border:none;border-radius:8px;cursor:pointer;background:none;padding:0}
@@ -60,6 +64,7 @@ body{background:#0a0a0a;color:#fff;font-family:'Space Grotesk','Segoe UI',sans-s
 </head>
 <body>
 <canvas id="canvas"></canvas>
+<div class="hover-zone" id="hoverZone"><div class="reveal-hint"></div></div>
 <div class="title" id="pageTitle">MUSIC BASS</div>
 <div class="photo-hint" id="photoHint"><span data-t="photoHint">Перетащи сюда музыку, видео или фото</span><span data-t="photoHintSub">видео будет играть только звуком</span></div>
 
@@ -90,7 +95,7 @@ body{background:#0a0a0a;color:#fff;font-family:'Space Grotesk','Segoe UI',sans-s
 <label><span data-t="autoColor">Авто-смена цвета</span> <input type="checkbox" id="autoColor" checked></label>
 </div>
 
-<div class="controls">
+<div class="controls" id="controls">
 <label class="file-label"><span data-t="loadAudio">▶ Музыка или видео</span><input type="file" id="audioFile" accept="audio/*,video/*"></label>
 <label class="file-label"><span data-t="loadVideo">🎬 Видео (только звук)</span><input type="file" id="videoFile" accept="video/*"></label>
 <button id="btnCapture" class="primary"><span data-t="captureBtn">🎧 Звук из приложений</span></button>
@@ -254,6 +259,53 @@ let beatIntensity = 0;
 let hueOffset = 0;
 let GLASS_STYLE = (localStorage.getItem('mb_glass') === null) ? true : (localStorage.getItem('mb_glass') === '1');
 const settingsPanel = document.getElementById('settingsPanel');
+
+const fineHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
+const controlsEl = document.getElementById('controls');
+if (fineHover) {
+  document.body.classList.add('auto-hide');
+} else {
+  const zone = document.getElementById('hoverZone');
+  if (zone) zone.remove();
+}
+let cvs = 1.2, cvsV = 0, cvsTarget = 1.2, cvsRAF = null, cvsLast = 0;
+const cvsK = 300, cvsD = 34;
+function controlsSpring(ts) {
+  if (!cvsLast) cvsLast = ts;
+  const dt = Math.min((ts - cvsLast) / 1000, 0.05);
+  cvsLast = ts;
+  cvsV += (cvsK * (cvsTarget - cvs) - cvsD * cvsV) * dt;
+  cvs += cvsV * dt;
+  controlsEl.style.transform = 'translateY(' + (cvs * 100).toFixed(3) + '%)';
+  if (Math.abs(cvsTarget - cvs) < 0.0008 && Math.abs(cvsV) < 0.0008) {
+    controlsEl.style.transform = 'translateY(' + (cvsTarget * 100).toFixed(2) + '%)';
+    cvsRAF = null;
+    return;
+  }
+  cvsRAF = requestAnimationFrame(controlsSpring);
+}
+function setControlsSpring(on) {
+  cvsTarget = on ? 0 : 1.2;
+  document.body.classList.toggle('controls-open', on);
+  if (!cvsRAF) { cvsLast = 0; cvsRAF = requestAnimationFrame(controlsSpring); }
+}
+if (fineHover) {
+  let zoneHover = false, ctrlHover = false, hideTimer = null;
+  const zone = document.getElementById('hoverZone');
+  function updateControls() {
+    if (zoneHover || ctrlHover) {
+      clearTimeout(hideTimer);
+      setControlsSpring(true);
+    } else {
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => setControlsSpring(false), 320);
+    }
+  }
+  zone.addEventListener('mouseenter', () => { zoneHover = true; updateControls(); });
+  zone.addEventListener('mouseleave', () => { zoneHover = false; updateControls(); });
+  controlsEl.addEventListener('mouseenter', () => { ctrlHover = true; updateControls(); });
+  controlsEl.addEventListener('mouseleave', () => { ctrlHover = false; updateControls(); });
+}
 
 const effects = { bars: true, circle: true, particles: true, wave: true, ripple: true, grid: true, stars: true, fire: true, mosaic: true, photo: true, water: true, glass: true, bubbles: true, liquid: true }; 
 
