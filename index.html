@@ -541,8 +541,10 @@ function addPhoto(file) {
     photos.push({
       img,
       orbitAngle: Math.random() * Math.PI * 2,
-      orbitSpeed: 0.0002 + Math.random() * 0.0006,
-      orbitRadius: 40 + Math.random() * 80,
+      orbitSpeed: 0.0001 + Math.random() * 0.0003,
+      orbitRadius: 5 + Math.random() * 18,
+      spinAngle: Math.random() * Math.PI * 2,
+      spinSpeed: 0.0006 + Math.random() * 0.0012,
       sizeMult: 0.5 + Math.random() * 0.7,
       phaseX: Math.random() * 100,
       phaseY: Math.random() * 100
@@ -1325,11 +1327,14 @@ function drawRipples() {
   }
 }
 
+let lastPhotoTime = 0;
 function drawPhoto() {
   if (!photos.length) return;
   const baseSize = parseFloat(document.getElementById('photoSize').value) || 100;
   const bounceForce = parseFloat(document.getElementById('bounceForce').value);
   const now = performance.now();
+  const dt = lastPhotoTime ? Math.min((now - lastPhotoTime) / 1000, 0.05) : 0.016;
+  lastPhotoTime = now;
 
   photos.forEach((ph, index) => {
     const bounce = beatIntensity * bounceForce;
@@ -1337,9 +1342,10 @@ function drawPhoto() {
     const orbitX = Math.cos(ph.orbitAngle) * ph.orbitRadius;
     const orbitY = Math.sin(ph.orbitAngle) * ph.orbitRadius;
     ph.orbitAngle += ph.orbitSpeed;
+    ph.spinAngle += ph.spinSpeed * dt * (1 + beatIntensity * 3);
 
-    const wobbleX = Math.sin(now / 200 + ph.phaseX) * beatIntensity * 12;
-    const wobbleY = Math.cos(now / 300 + ph.phaseY) * beatIntensity * 10;
+    const wobbleX = Math.sin(now / 200 + ph.phaseX) * beatIntensity * 8;
+    const wobbleY = Math.cos(now / 300 + ph.phaseY) * beatIntensity * 7;
     const x = cx + orbitX + wobbleX;
     const y = cy + orbitY + wobbleY - bounce * 0.4;
     const scale = 1 + beatIntensity * 0.15 * ph.sizeMult;
@@ -1365,6 +1371,7 @@ function drawPhoto() {
       drawH = s / aspect;
     }
 
+    ctx.rotate(ph.spinAngle);
     ctx.beginPath();
     ctx.arc(0, 0, s / 2, 0, Math.PI * 2);
     ctx.clip();
