@@ -34,7 +34,7 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 <body>
 <canvas id="canvas"></canvas>
 <div class="title">MUSIC VISUALIZER</div>
-<div class="photo-hint" id="photoHint">Перетащи фото сюда<span>или загрузи через настройки</span></div>
+<div class="photo-hint" id="photoHint">Перетащи сюда музыку, видео или фото<span>видео будет играть только звуком</span></div>
 
 <button class="toggle-btn" id="toggleSettings">&#9881;</button>
 
@@ -60,7 +60,8 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 </div>
 
 <div class="controls">
-<label class="file-label">&#9654; Загрузи музыку<input type="file" id="audioFile" accept="audio/*"></label>
+<label class="file-label">&#9654; Музыка или видео<input type="file" id="audioFile" accept="audio/*,video/*"></label>
+<label class="file-label" style="background:linear-gradient(135deg,#00e5ff,#7c4dff)">&#127909; Видео (только звук)<input type="file" id="videoFile" accept="video/*"></label>
 <button id="btnBars" class="active" data-effect="bars">Полосы</button>
 <button id="btnCircle" class="active" data-effect="circle">Кольцо</button>
 <button id="btnParticles" class="active" data-effect="particles">Частицы</button>
@@ -114,8 +115,7 @@ function fx() {
 const photos = [];
 let photoDragIndex = null;
 
-document.getElementById('audioFile').addEventListener('change', e => {
-  const file = e.target.files[0];
+function loadAudioFile(file) {
   if (!file) return;
   const url = URL.createObjectURL(file);
   audio.src = url;
@@ -124,6 +124,16 @@ document.getElementById('audioFile').addEventListener('change', e => {
   audio.play();
   isPlaying = true;
   audio.addEventListener('ended', () => { isPlaying = false; });
+}
+
+document.getElementById('audioFile').addEventListener('change', e => {
+  loadAudioFile(e.target.files[0]);
+  e.target.value = '';
+});
+
+document.getElementById('videoFile').addEventListener('change', e => {
+  loadAudioFile(e.target.files[0]);
+  e.target.value = '';
 });
 
 function initAudio() {
@@ -190,12 +200,8 @@ canvas.addEventListener('drop', e => {
     if (file.type.startsWith('image/')) {
       addPhoto(file);
       droppedImage = true;
-    } else if (file.type.startsWith('audio/')) {
-      audio.src = URL.createObjectURL(file);
-      audio.load();
-      if (!audioCtx) initAudio();
-      audio.play();
-      isPlaying = true;
+    } else if (file.type.startsWith('audio/') || file.type.startsWith('video/')) {
+      loadAudioFile(file);
     }
   }
   if (!droppedImage && e.dataTransfer.files.length === 0) {
