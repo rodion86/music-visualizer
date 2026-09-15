@@ -84,6 +84,8 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 <label class="file-label" style="background:linear-gradient(135deg,#00e5ff,#7c4dff)"><span data-t="loadVideo">🎬 Видео (только звук)</span><input type="file" id="videoFile" accept="video/*"></label>
 <button id="btnCapture" style="background:linear-gradient(135deg,#1db954,#0a7d34);border:none"><span data-t="captureBtn">🎧 Звук из приложений</span></button>
 <button id="btnSpotify" style="background:linear-gradient(135deg,#1db954,#191414);border:none"><span data-t="spotifyBtn">🎵 Открыть Spotify</span></button>
+<button id="btnYandex" style="background:linear-gradient(135deg,#ffcc00,#ff0033);border:none;color:#000"><span data-t="yandexBtn">🎵 Яндекс Музыка</span></button>
+<span id="captureHintText" style="font-size:10px;color:rgba(255,255,255,.4);flex-shrink:0;width:100%;text-align:center;display:none" data-t="captureHint"></span>
 <button id="btnBars" class="active" data-effect="bars"><span data-t="bars">Полосы</span></button>
 <button id="btnCircle" class="active" data-effect="circle"><span data-t="circle">Кольцо</span></button>
 <button id="btnParticles" class="active" data-effect="particles"><span data-t="particles">Частицы</span></button>
@@ -128,6 +130,8 @@ const LANGS = {
     captureBtn: '🎧 Звук из приложений',
     captureStop: '⏹ Остановить звук',
     spotifyBtn: '🎵 Открыть Spotify',
+    yandexBtn: '🎵 Яндекс Музыка',
+    captureHint: 'Открой плеер → нажми 🎧 захват → выбери вкладку с галочкой «Аудио»',
     bars: 'Полосы',
     circle: 'Кольцо',
     particles: 'Частицы',
@@ -171,6 +175,8 @@ const LANGS = {
     captureBtn: '🎧 Capture app sound',
     captureStop: '⏹ Stop sound',
     spotifyBtn: '🎵 Open Spotify',
+    yandexBtn: '🎵 Yandex Music',
+    captureHint: 'Open the player → press 🎧 capture → pick the tab with "Audio" checked',
     bars: 'Bars',
     circle: 'Circle',
     particles: 'Particles',
@@ -291,6 +297,7 @@ function setCaptureLabel(key) {
 }
 
 document.getElementById('btnCapture').addEventListener('click', async () => {
+  document.getElementById('captureHintText').style.display = 'block';
   if (captureOn) {
     captureStream.getTracks().forEach(t => t.stop());
     captureOn = false;
@@ -335,6 +342,12 @@ document.getElementById('btnCapture').addEventListener('click', async () => {
 
 document.getElementById('btnSpotify').addEventListener('click', () => {
   window.open('https://open.spotify.com', '_blank');
+  document.getElementById('captureHintText').style.display = 'block';
+});
+
+document.getElementById('btnYandex').addEventListener('click', () => {
+  window.open('https://music.yandex.ru/playlists/lk.e3093821-7202-42c6-8c4e-ab971f47177b?utm_source=desktop&utm_medium=copy_link', '_blank');
+  document.getElementById('captureHintText').style.display = 'block';
 });
 
 applyLang(currentLang);
