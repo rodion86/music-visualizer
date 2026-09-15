@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Visualizer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+#canvas{flex:1;display:block}
+.controls{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);padding:12px 20px;display:flex;align-items:center;gap:14px;z-index:10;border-top:1px solid rgba(255,255,255,.08);flex-wrap:wrap;justify-content:center}
+.controls label{font-size:12px;color:#aaa;cursor:pointer;display:flex;align-items:center;gap:6px}
+.controls input[type=range]{width:80px;accent-color:#ff4081}
+.controls input[type=color]{width:28px;height:28px;border:none;border-radius:50%;cursor:pointer;background:none;padding:0}
+.controls button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;transition:.2s}
+.controls button:hover{background:rgba(255,255,255,.2)}
+.controls button.active{background:#ff4081;border-color:#ff4081}
+.file-label{background:linear-gradient(135deg,#ff4081,#7c4dff);padding:6px 16px;border-radius:20px;cursor:pointer;font-size:12px;transition:.2s}
+.file-label:hover{opacity:.85}
+#audioFile{display:none}
+.settings-panel{position:fixed;top:12px;right:12px;background:rgba(10,10,10,.88);backdrop-filter:blur(12px);border-radius:14px;padding:14px;z-index:10;width:220px;border:1px solid rgba(255,255,255,.08);display:none}
+.settings-panel.show{display:block}
+.settings-panel h3{font-size:13px;margin-bottom:10px;color:#ff4081}
+.settings-panel label{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#aaa;margin-bottom:8px}
+.settings-panel input[type=range]{width:90px;accent-color:#ff4081}
+.settings-panel input[type=color]{width:24px;height:24px;border:none;border-radius:50%;cursor:pointer}
+.toggle-btn{position:fixed;top:12px;right:12px;z-index:11;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.title{position:fixed;top:12px;left:12px;font-size:14px;color:rgba(255,255,255,.4);z-index:10;pointer-events:none}
+.photo-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,.15);font-size:16px;pointer-events:none;z-index:5;text-align:center;display:none}
+.photo-hint span{display:block;font-size:11px;margin-top:4px}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div class="title">MUSIC VISUALIZER</div>
+<div class="photo-hint" id="photoHint">Перетащи фото сюда<span>или загрузи через настройки</span></div>
+
+<button class="toggle-btn" id="toggleSettings">&#9881;</button>
+
+<div class="settings-panel" id="settingsPanel">
+<h3>Настройки</h3>
+<label>Чувствительность <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1.5"></label>
+<label>Сила отскока <input type="range" id="bounceForce" min="0" max="50" step="1" value="20"></label>
+<label>Количество частиц <input type="range" id="particleCount" min="0" max="300" step="10" value="120"></label>
+<label>Скорость частиц <input type="range" id="particleSpeed" min="0.5" max="5" step="0.1" value="2"></label>
+<label>Толщина полос <input type="range" id="barWidth" min="1" max="8" step="0.5" value="3"></label>
+<label>Радиус кольца <input type="range" id="ringRadius" min="50" max="250" step="5" value="130"></label>
+<label>Интенсивность эффектов <input type="range" id="fxIntensity" min="10" max="100" step="5" value="60"></label>
+<label>Трейл (шлейф) <input type="range" id="trailLength" min="0" max="40" step="1" value="10"></label>
+<label>Фото размер <input type="range" id="photoSize" min="40" max="300" step="5" size="100"></label>
+<label>Загрузить фото <input type="file" id="photoFile" accept="image/*" multiple></label>
+<button id="clearPhotos">Убрать все фото</button>
+<hr style="border-color:rgba(255,255,255,.1);margin:6px 0">
+<label>Цвет полос <input type="color" id="colorBars" value="#ff4081"></label>
+<label>Цвет частиц <input type="color" id="colorParticles" value="#7c4dff"></label>
+<label>Цвет фона <input type="color" id="colorBg" value="#0a0a0a"></label>
+<label>Цвет колец <input type="color" id="colorRings" value="#00e5ff"></label>
+<label>Авто-смена цвета <input type="checkbox" id="autoColor" checked></label>
+</div>
+
+<div class="controls">
+<label class="file-label">&#9654; Загрузи музыку<input type="file" id="audioFile" accept="audio/*"></label>
+<button id="btnBars" class="active" data-effect="bars">Полосы</button>
+<button id="btnCircle" class="active" data-effect="circle">Кольцо</button>
+<button id="btnParticles" class="active" data-effect="particles">Частицы</button>
+<button id="btnWave" class="active" data-effect="wave">Волна</button>
+<button id="btnRipple" class="active" data-effect="ripple">Риплы</button>
+<button id="btnTunnel" class="active" data-effect="tunnel">Тоннель</button>
+<button id="btnSpiral" class="active" data-effect="spiral">Вихрь</button>
+<button id="btnGrid" class="active" data-effect="grid">Сетка</button>
+<button id="btnStars" class="active" data-effect="stars">Звёзды</button>
+<button id="btnFire" class="active" data-effect="fire">Пламя</button>
+<button id="btnComets" class="active" data-effect="comets">Кометы</button>
+<button id="btnMosaic" class="active" data-effect="mosaic">Мозаика</button>
+<button id="btnPhoto" class="active" data-effect="photo">Фото</button>
+<label>Громкость <input type="range" id="volume" min="0" max="1" step="0.01" value="0.7"></label>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H, cx, cy;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  cx = W / 2;
+  cy = H / 2;
+}
+resize();
+window.addEventListener('resize', resize);
+
+let audioCtx, analyser, dataArray, bufferLength, source;
+let audio = new Audio();
+let isPlaying = false;
+let beatThreshold = 0.6;
+let lastBeat = 0;
+let beatIntensity = 0;
+let hueOffset = 0;
+
+const effects = { bars: true, circle: true, particles: true, wave: true, ripple: true, tunnel: true, spiral: true, grid: true, stars: true, fire: true, comets: true, mosaic: true, photo: true }; 
+
+const particles = [];
+const ripples = [];
+const fireParticles = [];
+const comets = [];
+const stars = [];
+
+function fx() {
+  return parseInt(document.getElementById('fxIntensity').value) / 60;
+}
+
+const photos = [];
+let photoDragIndex = null;
+
+document.getElementById('audioFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  audio.src = url;
+  audio.load();
+  if (!audioCtx) initAudio();
+  audio.play();
+  isPlaying = true;
+  audio.addEventListener('ended', () => { isPlaying = false; });
+});
+
+function initAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;
+  source = audioCtx.createMediaElementSource(audio);
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
+  bufferLength = analyser.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
+}
+
+document.getElementById('toggleSettings').addEventListener('click', () => {
+  document.getElementById('settingsPanel').classList.toggle('show');
+});
+
+document.querySelectorAll('[data-effect]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const e = btn.dataset.effect;
+    effects[e] = !effects[e];
+    btn.classList.toggle('active');
+  });
+});
+
+document.getElementById('volume').addEventListener('input', e => {
+  audio.volume = e.target.value;
+});
+
+function addPhoto(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const img = new Image();
+  img.onload = () => {
+    photos.push({
+      img,
+      orbitAngle: Math.random() * Math.PI * 2,
+      orbitSpeed: 0.0002 + Math.random() * 0.0006,
+      orbitRadius: 40 + Math.random() * 80,
+      sizeMult: 0.5 + Math.random() * 0.7,
+      phaseX: Math.random() * 100,
+      phaseY: Math.random() * 100
+    });
+  };
+  img.src = URL.createObjectURL(file);
+  document.getElementById('photoHint').style.display = 'none';
+}
+
+document.getElementById('photoFile').addEventListener('change', e => {
+  for (const file of e.target.files) addPhoto(file);
+  e.target.value = '';
+});
+
+document.getElementById('clearPhotos').addEventListener('click', () => {
+  photos.length = 0;
+});
+
+document.getElementById('photoSize').value = 100;
+
+canvas.addEventListener('dragover', e => e.preventDefault());
+canvas.addEventListener('drop', e => {
+  e.preventDefault();
+  let droppedImage = false;
+  for (const file of e.dataTransfer.files) {
+    if (file.type.startsWith('image/')) {
+      addPhoto(file);
+      droppedImage = true;
+    } else if (file.type.startsWith('audio/')) {
+      audio.src = URL.createObjectURL(file);
+      audio.load();
+      if (!audioCtx) initAudio();
+      audio.play();
+      isPlaying = true;
+    }
+  }
+  if (!droppedImage && e.dataTransfer.files.length === 0) {
+    document.getElementById('photoHint').style.display = 'none';
+  }
+});
+
+function getVal(i) {
+  if (!dataArray) return 0;
+  return (dataArray[i] / 255) * parseFloat(document.getElementById('sensitivity').value);
+}
+
+function getAvg(start, end) {
+  if (!dataArray) return 0;
+  let sum = 0;
+  const s = Math.floor(start * bufferLength);
+  const e2 = Math.floor(end * bufferLength);
+  for (let i = s; i < e2; i++) sum += dataArray[i];
+  return (sum / ((e2 - s) * 255)) * parseFloat(document.getElementById('sensitivity').value);
+}
+
+function detectBeat() {
+  const bass = getAvg(0, 0.1);
+  const now = performance.now();
+  if (bass > beatThreshold && now - lastBeat > 150) {
+    lastBeat = now;
+    beatIntensity = Math.min(bass * 1.5, 1);
+    return true;
+  }
+  beatIntensity *= 0.92;
+  return false;
+}
+
+function hslToStr(h, s, l, a) {
+  return `hsla(${h % 360},${s}%,${l}%,${a !== undefined ? a : 1})`;
+}
+
+function spawnParticles(count) {
+  const speed = parseFloat(document.getElementById('particleSpeed').value);
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const spd = (0.5 + Math.random() * 2) * speed;
+    particles.push({
+      x: cx, y: cy,
+      vx: Math.cos(angle) * spd,
+      vy: Math.sin(angle) * spd,
+      life: 1,
+      decay: 0.005 + Math.random() * 0.015,
+      size: 1 + Math.random() * 3,
+      hue: (hueOffset + Math.random() * 60) % 360
+    });
+  }
+}
+
+function drawBars() {
+  const autoColor = document.getElementById('autoColor').checked;
+  const baseColor = document.getElementById('colorBars').value;
+  const bw = parseFloat(document.getElementById('barWidth').value);
+  const count = Math.floor(bufferLength * 0.6);
+
+  for (let i = 0; i < count; i++) {
+    const val = getVal(i);
+    const h = val * H * 0.4;
+    const x = (i / count) * W;
+    let color;
+    if (autoColor) {
+      color = hslToStr((hueOffset + (i / count) * 120) % 360, 80, 55 + val * 20, 0.8 + val * 0.2);
+    } else {
+      color = baseColor;
+    }
+    ctx.fillStyle = color;
+    ctx.fillRect(x, H - h, bw, h);
+    ctx.fillStyle = hslToStr((hueOffset + (i / count) * 120) % 360, 80, 55, 0.3);
+    ctx.fillRect(x, 0, bw, h * 0.3);
+  }
+}
+
+function drawCircle() {
+  const autoColor = document.getElementById('autoColor').checked;
+  const baseColor = document.getElementById('colorRings').value;
+  const radius = parseFloat(document.getElementById('ringRadius').value) + beatIntensity * 30;
+  const count = Math.floor(bufferLength * 0.5);
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  for (let i = 0; i < count; i++) {
+    const val = getVal(i);
+    const angle = (i / count) * Math.PI * 2;
+    const len = val * 80 + 5;
+    const x1 = Math.cos(angle) * radius;
+    const y1 = Math.sin(angle) * radius;
+    const x2 = Math.cos(angle) * (radius + len);
+    const y2 = Math.sin(angle) * (radius + len);
+
+    let color;
+    if (autoColor) {
+      color = hslToStr((hueOffset + (i / count) * 360) % 360, 85, 55 + val * 15);
+    } else {
+      color = baseColor;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  if (beatIntensity > 0.1) {
+    ctx.beginPath();
+    ctx.arc(0, 0, radius - 5, 0, Math.PI * 2);
+    ctx.strokeStyle = hslToStr(hueOffset % 360, 80, 60, beatIntensity * 0.5);
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawWave() {
+  if (!dataArray) return;
+  const autoColor = document.getElementById('autoColor').checked;
+  const baseColor = document.getElementById('colorBars').value;
+
+  ctx.beginPath();
+  analyser.getByteTimeDomainData(dataArray);
+
+  for (let i = 0; i < bufferLength; i++) {
+    const x = (i / bufferLength) * W;
+    const v = dataArray[i] / 128.0;
+    const y = cy + (v - 1) * H * 0.25 * parseFloat(document.getElementById('sensitivity').value);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+
+  let color;
+  if (autoColor) {
+    color = hslToStr((hueOffset + 180) % 360, 90, 60, 0.7);
+  } else {
+    color = baseColor;
+  }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function updateParticles() {
+  const max = parseInt(document.getElementById('particleCount').value);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.02;
+    p.life -= p.decay;
+    if (p.life <= 0 || particles.length > max + 50) {
+      particles.splice(i, 1);
+    }
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * (0.5 + beatIntensity), 0, Math.PI * 2);
+    ctx.fillStyle = hslToStr(p.hue, 80, 60, p.life * 0.8);
+    ctx.fill();
+  }
+}
+
+function drawTunnel() {
+  const bass = getAvg(0, 0.1);
+  const mid = getAvg(0.15, 0.4);
+  const pulse = bass * 60 * fx() + 20;
+  const rings = 24;
+  const wobble = Math.sin(performance.now() / 800) * 15;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.lineWidth = 2;
+
+  for (let i = rings; i >= 1; i--) {
+    const t = (i / rings);
+    const r = (0.35 + t) * (H * 0.5) + pulse * (1 - t) + wobble * t;
+    const alpha = 0.08 + t * 0.5 + beatIntensity * 0.3;
+    const autoColor = document.getElementById('autoColor').checked;
+    ctx.beginPath();
+    ctx.arc(0, 0, Math.max(r, 2), 0, Math.PI * 2);
+    if (autoColor) {
+      ctx.strokeStyle = hslToStr((hueOffset + t * 180 + mid * 40) % 360, 80, 55 + mid * 30, alpha * 0.8);
+    } else {
+      ctx.strokeStyle = document.getElementById('colorRings').value;
+      ctx.globalAlpha = alpha * 0.8;
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawSpiral() {
+  const mid = getAvg(0.05, 0.5);
+  const turns = 3 + mid * 3 * fx();
+  const dots = Math.floor(160 * fx()) + 80;
+  const t = performance.now() / 900;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  for (let i = 0; i < dots; i++) {
+    const p = i / dots;
+    const ang = p * Math.PI * 2 * turns + t * (1 + mid);
+    const rad = Math.max(p * H * 0.45 * (1.2 - mid * 0.5), 2);
+    const x = Math.cos(ang) * rad;
+    const y = Math.sin(ang) * rad;
+    const s = (2 + mid * 6 * fx()) * (1 + beatIntensity * 0.5);
+    const autoColor = document.getElementById('autoColor').checked;
+    ctx.beginPath();
+    ctx.arc(x, y, s, 0, Math.PI * 2);
+    if (autoColor) {
+      ctx.fillStyle = hslToStr((hueOffset + p * 360) % 360, 85, 60, 0.4 + p * 0.5);
+    } else {
+      ctx.fillStyle = document.getElementById('colorParticles').value;
+      ctx.globalAlpha = 0.4 + p * 0.5;
+    }
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawGrid() {
+  const cols = 16;
+  const rows = Math.floor(cols * (H / W));
+  const cw = W / cols;
+  const ch = H / rows;
+  const amp = H * 0.12 * fx();
+  const autoColor = document.getElementById('autoColor').checked;
+
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= cols; x++) {
+    const px = x * cw;
+    const bend = Math.sin(x * 0.4 + performance.now() / 600) * amp * getAvg(0.2, 0.5);
+    ctx.beginPath();
+    ctx.moveTo(px, 0);
+    for (let y = 0; y <= rows; y++) {
+      const py = y * ch;
+      const off = Math.sin(py * 0.02 + performance.now() / 700 + x) * bend;
+      ctx.lineTo(px + off, py);
+    }
+    if (autoColor) {
+      ctx.strokeStyle = hslToStr((hueOffset + (x / cols) * 90) % 360, 75, 55, 0.5);
+    } else {
+      ctx.strokeStyle = document.getElementById('colorRings').value;
+      ctx.globalAlpha = 0.5;
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawStars() {
+  const count = 120;
+  const autoColor = document.getElementById('autoColor').checked;
+  for (let i = 0; i < count; i++) {
+    stars[i] = stars[i] || {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      z: Math.random(),
+      tw: Math.random() * Math.PI * 2
+    };
+    const st = stars[i];
+    st.tw += 0.05;
+    const twinkle = (Math.sin(st.tw) + 1) / 2;
+    const beatGlow = beatIntensity * 0.8 * (1 - st.z);
+    const size = (0.5 + twinkle * 2 + beatGlow * 3) * (0.5 + st.z);
+    ctx.beginPath();
+    ctx.arc(st.x, st.y, Math.max(size, 0.2), 0, Math.PI * 2);
+    if (autoColor) {
+      ctx.fillStyle = hslToStr((hueOffset + st.z * 80) % 360, 90, 70 + twinkle * 30, 0.3 + twinkle * 0.7);
+    } else {
+      ctx.fillStyle = document.getElementById('colorParticles').value;
+      ctx.globalAlpha = 0.3 + twinkle * 0.7;
+    }
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function spawnFire() {
+  const count = Math.floor(20 * fx()) + 6;
+  for (let i = 0; i < count; i++) {
+    fireParticles.push({
+      x: Math.random() * W,
+      y: H + Math.random() * 10,
+      vy: -(1 + Math.random() * 3) * fx(),
+      vx: (Math.random() - 0.5) * 2,
+      size: 2 + Math.random() * 5,
+      heat: 0.7 + Math.random() * 0.3
+    });
+  }
+}
+
+function updateFire() {
+  for (let i = fireParticles.length - 1; i >= 0; i--) {
+    const f = fireParticles[i];
+    f.y += f.vy;
+    f.x += f.vx + (Math.random() - 0.5) * 1.5;
+    f.vy *= 0.995;
+    f.heat -= 0.02;
+    if (f.heat <= 0 || f.y < -20) fireParticles.splice(i, 1);
+  }
+}
+
+function drawFire() {
+  const autoColor = document.getElementById('autoColor').checked;
+  const height = getAvg(0, 0.15);
+  if (Math.random() < 0.5 + height * 0.5) spawnFire();
+
+  for (const f of fireParticles) {
+    const s = f.size * (0.6 + f.heat) * (1 + beatIntensity);
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, s, 0, Math.PI * 2);
+    if (autoColor) {
+      ctx.fillStyle = hslToStr(hueOffset + (1 - f.heat) * 40, 90, 55, f.heat);
+    } else {
+      ctx.fillStyle = `rgba(255, ${Math.floor(120 + f.heat * 90)}, 0, ${f.heat})`;
+    }
+    ctx.fill();
+  }
+}
+
+function spawnComet() {
+  const angle = Math.random() * Math.PI * 2;
+  const dist = Math.max(W, H);
+  comets.push({
+    x: cx + Math.cos(angle) * dist,
+    y: cy + Math.sin(angle) * dist,
+    angle,
+    speed: (4 + Math.random() * 4) * fx(),
+    tail: []
+  });
+}
+
+function updateComets() {
+  for (let i = comets.length - 1; i >= 0; i--) {
+    const c = comets[i];
+    c.x -= Math.cos(c.angle) * c.speed;
+    c.y -= Math.sin(c.angle) * c.speed;
+    c.tail.push({ x: c.x, y: c.y });
+    if (c.tail.length > 20) c.tail.shift();
+    if (Math.hypot(c.x - cx, c.y - cy) < 5) comets.splice(i, 1);
+  }
+}
+
+function drawComets() {
+  const autoColor = document.getElementById('autoColor').checked;
+  const energy = getAvg(0, 0.3);
+  if (energy > 0.35 * fx() && Math.random() < 0.25) spawnComet();
+
+  for (const c of comets) {
+    for (let j = 0; j < c.tail.length; j++) {
+      const tt = c.tail[j];
+      const alpha = ((j + 1) / c.tail.length) * 0.8;
+      const s = ((j + 1) / c.tail.length) * 4;
+      ctx.beginPath();
+      ctx.arc(tt.x, tt.y, s, 0, Math.PI * 2);
+      if (autoColor) {
+        ctx.fillStyle = hslToStr((hueOffset + 200) % 360, 90, 60, alpha);
+      } else {
+        ctx.fillStyle = document.getElementById('colorParticles').value;
+        ctx.globalAlpha = alpha;
+      }
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawMosaic() {
+  const cols = 24;
+  const rows = Math.floor(cols * (H / W));
+  const cw = W / cols;
+  const ch = H / rows;
+  const autoColor = document.getElementById('autoColor').checked;
+  const energy = beatIntensity + getAvg(0.05, 0.3) * 0.5;
+
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      const idx = (j * cols + i) % bufferLength;
+      const v = getVal(idx) * 0.4;
+      const pulse = v * energy * fx();
+      const px = i * cw;
+      const py = j * ch;
+      const s = Math.max(cw * (0.4 + pulse), 1);
+      ctx.fillStyle = autoColor
+        ? hslToStr((hueOffset + i * 12 + j * 8) % 360, 80, 35 + v * 40)
+        : document.getElementById('colorBars').value;
+      ctx.globalAlpha = 0.55 + v * 0.45;
+      ctx.fillRect(px + (cw - s) / 2, py + (ch - s) / 2, s, s);
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawRipples() {
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const r = ripples[i];
+    r.radius += 4;
+    r.life -= 0.015;
+    if (r.life <= 0) {
+      ripples.splice(i, 1);
+      continue;
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, r.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = hslToStr(r.hue, 80, 60, r.life * 0.5);
+    ctx.lineWidth = 2 + beatIntensity * 3;
+    ctx.stroke();
+  }
+}
+
+function drawPhoto() {
+  if (!photos.length) return;
+  const baseSize = parseFloat(document.getElementById('photoSize').value) || 100;
+  const bounceForce = parseFloat(document.getElementById('bounceForce').value);
+  const now = performance.now();
+
+  photos.forEach((ph, index) => {
+    const bounce = beatIntensity * bounceForce;
+    const size = baseSize * ph.sizeMult + bounce * 1.5;
+    const orbitX = Math.cos(ph.orbitAngle) * ph.orbitRadius;
+    const orbitY = Math.sin(ph.orbitAngle) * ph.orbitRadius;
+    ph.orbitAngle += ph.orbitSpeed;
+
+    const wobbleX = Math.sin(now / 200 + ph.phaseX) * beatIntensity * 12;
+    const wobbleY = Math.cos(now / 300 + ph.phaseY) * beatIntensity * 10;
+    const x = cx + orbitX + wobbleX;
+    const y = cy + orbitY + wobbleY - bounce * 0.4;
+    const scale = 1 + beatIntensity * 0.15 * ph.sizeMult;
+    const s = size * scale;
+
+    ctx.save();
+    ctx.translate(x, y);
+
+    if (beatIntensity > 0.12) {
+      ctx.shadowColor = hslToStr((hueOffset + index * 40) % 360, 90, 60, 0.6);
+      ctx.shadowBlur = 15 + beatIntensity * 25;
+    }
+
+    const imgW = ph.img.naturalWidth || s;
+    const imgH = ph.img.naturalHeight || s;
+    const aspect = imgW / imgH;
+    let drawW, drawH;
+    if (aspect > 1) {
+      drawH = s;
+      drawW = s * aspect;
+    } else {
+      drawW = s;
+      drawH = s / aspect;
+    }
+
+    ctx.beginPath();
+    ctx.arc(0, 0, s / 2, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(ph.img, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.arc(x, y, s / 2 + 3, 0, Math.PI * 2);
+    ctx.strokeStyle = hslToStr((hueOffset + index * 40) % 360, 80, 60, 0.4 + beatIntensity * 0.5);
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+}
+
+canvas.addEventListener('mousedown', e => {
+  const baseSize = parseFloat(document.getElementById('photoSize').value) || 100;
+  for (let i = photos.length - 1; i >= 0; i--) {
+    const ph = photos[i];
+    const size = baseSize * ph.sizeMult;
+    const x = cx + Math.cos(ph.orbitAngle) * ph.orbitRadius;
+    const y = cy + Math.sin(ph.orbitAngle) * ph.orbitRadius;
+    const dist = Math.hypot(e.clientX - x, e.clientY - y);
+    if (dist < size / 2 + 6) {
+      photoDragIndex = i;
+      break;
+    }
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (photoDragIndex === null) return;
+  const ph = photos[photoDragIndex];
+  const dx = e.clientX - cx;
+  const dy = e.clientY - cy;
+  ph.orbitRadius = Math.hypot(dx, dy);
+  ph.orbitAngle = Math.atan2(dy, dx);
+});
+
+canvas.addEventListener('mouseup', () => {
+  photoDragIndex = null;
+});
+
+canvas.addEventListener('mouseleave', () => {
+  photoDragIndex = null;
+});
+
+function autoColorCycle() {
+  if (document.getElementById('autoColor').checked) {
+    hueOffset += 0.3;
+  }
+}
+
+function hexToRgba(hex, a) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const bg = document.getElementById('colorBg').value;
+  const trail = parseInt(document.getElementById('trailLength').value) / 100;
+  if (trail > 0.01) {
+    ctx.fillStyle = hexToRgba(bg, trail);
+  } else {
+    ctx.fillStyle = bg;
+  }
+  ctx.fillRect(0, 0, W, H);
+
+  if (analyser && isPlaying) {
+    analyser.getByteFrequencyData(dataArray);
+  }
+
+  const isBeat = detectBeat();
+
+  if (isBeat && effects.particles) {
+    spawnParticles(Math.floor((8 + beatIntensity * 20) * fx()));
+  }
+  if (isBeat && effects.ripple) {
+    ripples.push({
+      radius: 20,
+      life: 1,
+      hue: (hueOffset + Math.random() * 60) % 360
+    });
+  }
+  if (isBeat && effects.tunnel) {
+    for (let i = 0; i < 4; i++) {
+      ripples.push({
+        radius: 5,
+        life: 1,
+        hue: (hueOffset + Math.random() * 60) % 360
+      });
+    }
+  }
+
+  if (effects.wave) drawWave();
+  if (effects.bars) drawBars();
+  if (effects.circle) drawCircle();
+  if (effects.tunnel) drawTunnel();
+  if (effects.grid) drawGrid();
+  if (effects.spiral) drawSpiral();
+
+  updateParticles();
+  if (effects.particles) drawParticles();
+
+  updateFire();
+  if (effects.fire) drawFire();
+
+  updateComets();
+  if (effects.comets) drawComets();
+
+  if (effects.stars) drawStars();
+  if (effects.mosaic) drawMosaic();
+
+  if (effects.ripple) drawRipples();
+  if (effects.photo) drawPhoto();
+
+  autoColorCycle();
+}
+
+animate();
+
+document.addEventListener('click', () => {
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}, { once: true });
+</script>
+</body>
+</html>
