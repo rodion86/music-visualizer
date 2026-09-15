@@ -6,29 +6,39 @@
 <title>Music Bass</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+:root{--ac:#fff;--t:rgba(255,255,255,.06);--tc:rgba(255,255,255,.45)}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%}
-body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hidden;height:100vh;height:100dvh;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body{background:#0a0a0a;color:#fff;font-family:'Space Grotesk','Segoe UI',sans-serif;overflow:hidden;height:100vh;height:100dvh;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 #canvas{flex:1;display:block;touch-action:none}
 .controls{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;z-index:10;border-top:1px solid rgba(255,255,255,.08);flex-wrap:wrap;justify-content:center}
 .controls label{font-size:12px;color:#aaa;cursor:pointer;display:flex;align-items:center;gap:6px}
-.controls input[type=range]{width:80px;accent-color:#ff4081}
-.controls input[type=color]{width:28px;height:28px;border:none;border-radius:50%;cursor:pointer;background:none;padding:0}
-.controls button,.file-label{flex-shrink:0;-webkit-user-select:none;user-select:none}
-.controls button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;padding:8px 14px;border-radius:22px;cursor:pointer;font-size:13px;transition:.2s;min-height:38px}
-.controls button:hover{background:rgba(255,255,255,.2)}
-.controls button.active{background:#ff4081;border-color:#ff4081}
-.file-label{background:linear-gradient(135deg,#ff4081,#7c4dff);padding:8px 16px;border-radius:22px;cursor:pointer;font-size:13px;transition:.2s;min-height:38px;color:#fff;display:flex;align-items:center;gap:6px}
-.file-label:hover{opacity:.85}
+.controls input[type=range]{width:80px;accent-color:#fff}
+.controls input[type=color]{width:28px;height:28px;border:none;border-radius:8px;cursor:pointer;background:none;padding:0}
+.controls button,.file-label{flex-shrink:0;-webkit-user-select:none;user-select:none;font-family:'Space Grotesk','Segoe UI',sans-serif}
+.controls button{background:rgba(255,255,255,.03);border:1px solid var(--t);color:var(--tc);padding:8px 14px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;letter-spacing:.2px;min-height:38px;position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1)}
+.controls button::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,.06);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.controls button:hover::before{transform:scaleX(1)}
+.controls button:hover{color:#fff;border-color:rgba(255,255,255,.18);transform:translateY(-2px)}
+.controls button:active{transform:scale(.97);transition-duration:.1s}
+.controls button.active{background:var(--ac);border-color:var(--ac);color:#000;font-weight:700;transform:scale(1.05)}
+.controls button.active::before{display:none}
+.controls button.primary{background:var(--ac);border-color:var(--ac);color:#000;font-weight:700}
+.controls button.primary:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 24px rgba(255,255,255,.15)}
+.file-label{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;min-height:38px;display:flex;align-items:center;gap:6px;transition:all .3s cubic-bezier(.4,0,.2,1)}
+.file-label:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.22);transform:translateY(-2px)}
 #audioFile,#videoFile{display:none}
 .settings-panel{position:fixed;top:12px;right:12px;background:rgba(10,10,10,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:14px;padding:14px;z-index:10;width:230px;border:1px solid rgba(255,255,255,.08);display:none}
 .settings-panel.show{display:block}
-.settings-panel h3{font-size:13px;margin-bottom:10px;color:#ff4081}
+.settings-panel h3{font-size:13px;margin-bottom:10px;color:#fff;opacity:.6;font-family:'JetBrains Mono','Space Grotesk',monospace;letter-spacing:.5px}
 .settings-panel label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#aaa;margin-bottom:10px;min-height:30px}
-.settings-panel input[type=range]{width:90px;accent-color:#ff4081}
-.settings-panel input[type=color]{width:28px;height:28px;border:none;border-radius:50%;cursor:pointer;background:none;padding:0}
-.settings-panel button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;padding:8px 12px;border-radius:20px;cursor:pointer;font-size:12px;width:100%;margin-bottom:6px}
-.toggle-btn{position:fixed;top:12px;right:12px;z-index:11;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none}
+.settings-panel input[type=range]{width:90px;accent-color:#fff}
+.settings-panel input[type=color]{width:28px;height:28px;border:none;border-radius:8px;cursor:pointer;background:none;padding:0}
+.settings-panel button{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);color:var(--tc);padding:9px 12px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;width:100%;margin-bottom:6px;font-family:'Space Grotesk','Segoe UI',sans-serif;transition:all .25s}
+.settings-panel button:hover{color:#fff;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+.toggle-btn{position:fixed;top:12px;right:12px;z-index:11;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);color:#fff;width:40px;height:40px;border-radius:12px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;transition:all .3s cubic-bezier(.4,0,.2,1)}
+.toggle-btn:hover{color:#000;background:var(--ac);border-color:var(--ac);transform:rotate(90deg)}
 .title{position:fixed;top:12px;left:12px;font-size:14px;color:rgba(255,255,255,.4);z-index:10;pointer-events:none}
 .photo-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,.15);font-size:16px;pointer-events:none;z-index:5;text-align:center;display:none;white-space:nowrap}
 .photo-hint span{display:block;font-size:11px;margin-top:4px}
@@ -81,10 +91,10 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 
 <div class="controls">
 <label class="file-label"><span data-t="loadAudio">▶ Музыка или видео</span><input type="file" id="audioFile" accept="audio/*,video/*"></label>
-<label class="file-label" style="background:linear-gradient(135deg,#00e5ff,#7c4dff)"><span data-t="loadVideo">🎬 Видео (только звук)</span><input type="file" id="videoFile" accept="video/*"></label>
-<button id="btnCapture" style="background:linear-gradient(135deg,#1db954,#0a7d34);border:none"><span data-t="captureBtn">🎧 Звук из приложений</span></button>
-<button id="btnSpotify" style="background:linear-gradient(135deg,#1db954,#191414);border:none"><span data-t="spotifyBtn">🎵 Открыть Spotify</span></button>
-<button id="btnYandex" style="background:linear-gradient(135deg,#ffcc00,#ff0033);border:none;color:#000"><span data-t="yandexBtn">🎵 Яндекс Музыка</span></button>
+<label class="file-label"><span data-t="loadVideo">🎬 Видео (только звук)</span><input type="file" id="videoFile" accept="video/*"></label>
+<button id="btnCapture" class="primary"><span data-t="captureBtn">🎧 Звук из приложений</span></button>
+<button id="btnSpotify" class="primary"><span data-t="spotifyBtn">🎵 Открыть Spotify</span></button>
+<button id="btnYandex" class="primary"><span data-t="yandexBtn">🎵 Яндекс Музыка</span></button>
 <span id="captureHintText" style="font-size:10px;color:rgba(255,255,255,.4);flex-shrink:0;width:100%;text-align:center;display:none" data-t="captureHint"></span>
 <button id="btnBars" class="active" data-effect="bars"><span data-t="bars">Полосы</span></button>
 <button id="btnCircle" class="active" data-effect="circle"><span data-t="circle">Кольцо</span></button>
@@ -96,7 +106,7 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 <button id="btnFire" class="active" data-effect="fire"><span data-t="fire">Пламя</span></button>
 <button id="btnWater" class="active" data-effect="water"><span data-t="water">Вода</span></button>
 <button id="btnGlass" class="active" data-effect="glass"><span data-t="glass">Стекло</span></button>
-<button id="btnGlassStyle" style="border:1px solid #9be7ff;background:rgba(255,255,255,.06)"><span data-t="glassStyle">🪟 Стекло-стиль</span></button>
+<button id="btnGlassStyle"><span data-t="glassStyle">🪟 Стекло-стиль</span></button>
 <button id="btnLiquid" class="active" data-effect="liquid"><span data-t="liquid">💧 Жидкое стекло</span></button>
 <button id="btnBubbles" class="active" data-effect="bubbles"><span data-t="bubbles">Пузыри</span></button>
 <button id="btnMosaic" class="active" data-effect="mosaic"><span data-t="mosaic">Мозаика</span></button>
