@@ -79,7 +79,6 @@ body.auto-hide .controls{transform:translateY(120%);will-change:transform}
     <button id="epiBtn" class="epi-btn" data-t="epiBtn"></button>
   </div>
 </div>
-<script>if(localStorage.getItem('mb_epilepsy'))document.getElementById('epiWarning').style.display='none';</script>
 <canvas id="canvas"></canvas>
 <div class="hover-zone" id="hoverZone"><div class="reveal-hint"></div></div>
 <div class="title" id="pageTitle">MUSIC BASS</div>
@@ -455,10 +454,8 @@ applyLang(currentLang);
 
 const epiWarning = document.getElementById('epiWarning');
 document.getElementById('epiBtn').addEventListener('click', () => {
-  localStorage.setItem('mb_epilepsy', '1');
   epiWarning.style.display = 'none';
 });
-if (!localStorage.getItem('mb_epilepsy')) epiWarning.style.display = 'flex';
 
 let panelOpen = false, px = -1.2, pv = 0, po = 0, pvo = 0, pTarget = -1.2, pTargetO = 0, springRAF = null, lastTs = 0;
 const SK = 260, SD = 26, reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
