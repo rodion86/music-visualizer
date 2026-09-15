@@ -47,6 +47,14 @@ body.auto-hide .controls{transform:translateY(120%);will-change:transform}
 .title{position:fixed;top:12px;left:12px;font-size:14px;color:rgba(255,255,255,.4);z-index:10;pointer-events:none}
 .photo-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,.15);font-size:16px;pointer-events:none;z-index:5;text-align:center;display:none;white-space:nowrap}
 .photo-hint span{display:block;font-size:11px;margin-top:4px}
+.epi-warning{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px}
+.epi-card{max-width:340px;width:100%;background:radial-gradient(circle at 30% 15%,rgba(255,200,60,.1),transparent 50%),linear-gradient(135deg,rgba(40,40,40,.9),rgba(15,15,15,.95));border:1px solid rgba(255,190,0,.4);border-radius:16px;padding:26px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08);color:#fff}
+.epi-icon{font-size:2.6rem;line-height:1;margin-bottom:14px;animation:epiPulse 1.6s ease-in-out infinite}
+@keyframes epiPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15);filter:drop-shadow(0 0 14px rgba(255,190,0,.55))}}
+.epi-title{font-size:1.05rem;font-weight:700;letter-spacing:.3px;margin-bottom:10px;color:#ffc233}
+.epi-text{font-size:.85rem;color:rgba(255,255,255,.78);line-height:1.6;margin-bottom:22px}
+.epi-btn{display:inline-block;padding:12px 26px;border-radius:12px;background:linear-gradient(135deg,#ffc233,#ff8c00);border:none;color:#000;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk','Segoe UI',sans-serif;transition:transform .2s,box-shadow .2s}
+.epi-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,170,0,.35)}
 @media (max-width:768px){
   .controls{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-left:14px;padding-right:14px}
   .controls::-webkit-scrollbar{display:none}
@@ -63,6 +71,15 @@ body.auto-hide .controls{transform:translateY(120%);will-change:transform}
 </style>
 </head>
 <body>
+<div class="epi-warning" id="epiWarning">
+  <div class="epi-card">
+    <div class="epi-icon">&#9888;&#65039;</div>
+    <div class="epi-title" data-t="epiTitle"></div>
+    <div class="epi-text" data-t="epiText"></div>
+    <button id="epiBtn" class="epi-btn" data-t="epiBtn"></button>
+  </div>
+</div>
+<script>if(localStorage.getItem('mb_epilepsy'))document.getElementById('epiWarning').style.display='none';</script>
 <canvas id="canvas"></canvas>
 <div class="hover-zone" id="hoverZone"><div class="reveal-hint"></div></div>
 <div class="title" id="pageTitle">MUSIC BASS</div>
@@ -125,6 +142,9 @@ const LANGS = {
   ru: {
     photoHint: 'Перетащи сюда музыку, видео или фото',
     photoHintSub: 'видео будет играть только звуком',
+    epiTitle: '⚠ Внимание',
+    epiText: 'Это приложение содержит много ярких вспышек и интенсивных световых эффектов. Если у вас эпилепсия или чувствительность к свету, будьте осторожны.',
+    epiBtn: 'Я понимаю',
     closeSettings: '✕ Закрыть',
     settingsTitle: 'Настройки',
     sensitivity: 'Чувствительность',
@@ -173,6 +193,9 @@ const LANGS = {
   en: {
     photoHint: 'Drop music, video or photos here',
     photoHintSub: 'video plays audio only',
+    epiTitle: '⚠ Warning',
+    epiText: 'This app contains frequent bright flashes and intense light effects. If you have epilepsy or light sensitivity, please be cautious.',
+    epiBtn: 'I understand',
     closeSettings: '✕ Close',
     settingsTitle: 'Settings',
     sensitivity: 'Sensitivity',
@@ -429,6 +452,13 @@ document.getElementById('btnYandex').addEventListener('click', () => {
 });
 
 applyLang(currentLang);
+
+const epiWarning = document.getElementById('epiWarning');
+document.getElementById('epiBtn').addEventListener('click', () => {
+  localStorage.setItem('mb_epilepsy', '1');
+  epiWarning.style.display = 'none';
+});
+if (!localStorage.getItem('mb_epilepsy')) epiWarning.style.display = 'flex';
 
 let panelOpen = false, px = -1.2, pv = 0, po = 0, pvo = 0, pTarget = -1.2, pTargetO = 0, springRAF = null, lastTs = 0;
 const SK = 260, SD = 26, reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
