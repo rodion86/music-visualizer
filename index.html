@@ -99,6 +99,8 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 <button id="btnComets" class="active" data-effect="comets"><span data-t="comets">Кометы</span></button>
 <button id="btnWater" class="active" data-effect="water"><span data-t="water">Вода</span></button>
 <button id="btnGlass" class="active" data-effect="glass"><span data-t="glass">Стекло</span></button>
+<button id="btnGlassStyle" style="border:1px solid #9be7ff;background:rgba(255,255,255,.06)"><span data-t="glassStyle">🪟 Стекло-стиль</span></button>
+<button id="btnLiquid" class="active" data-effect="liquid"><span data-t="liquid">💧 Жидкое стекло</span></button>
 <button id="btnBubbles" class="active" data-effect="bubbles"><span data-t="bubbles">Пузыри</span></button>
 <button id="btnMosaic" class="active" data-effect="mosaic"><span data-t="mosaic">Мозаика</span></button>
 <button id="btnPhoto" class="active" data-effect="photo"><span data-t="photo">Фото</span></button>
@@ -148,6 +150,8 @@ const LANGS = {
     comets: 'Кометы',
     water: 'Вода',
     glass: 'Стекло',
+    glassStyle: '🪟 Стекло-стиль',
+    liquid: '💧 Жидкое стекло',
     bubbles: 'Пузыри',
     mosaic: 'Мозаика',
     photo: 'Фото',
@@ -196,6 +200,8 @@ const LANGS = {
     comets: 'Comets',
     water: 'Water',
     glass: 'Glass',
+    glassStyle: '🪟 Glass style',
+    liquid: '💧 Liquid glass',
     bubbles: 'Bubbles',
     mosaic: 'Mosaic',
     photo: 'Photo',
@@ -242,8 +248,9 @@ let beatThreshold = 0.6;
 let lastBeat = 0;
 let beatIntensity = 0;
 let hueOffset = 0;
+let GLASS_STYLE = (localStorage.getItem('mb_glass') === null) ? true : (localStorage.getItem('mb_glass') === '1');
 
-const effects = { bars: true, circle: true, particles: true, wave: true, ripple: true, tunnel: true, spiral: true, grid: true, stars: true, fire: true, comets: true, mosaic: true, photo: true, water: true, glass: true, bubbles: true }; 
+const effects = { bars: true, circle: true, particles: true, wave: true, ripple: true, tunnel: true, spiral: true, grid: true, stars: true, fire: true, comets: true, mosaic: true, photo: true, water: true, glass: true, bubbles: true, liquid: true }; 
 
 const particles = [];
 const ripples = [];
@@ -255,6 +262,10 @@ const shards = [];
 
 function fx() {
   return (parseInt(document.getElementById('fxIntensity').value) / 60) * (IS_MOBILE ? 0.65 : 1);
+}
+
+function gColor(hue, alpha) {
+  return hslToStr((hueOffset + hue) % 360, 20, 90, alpha);
 }
 
 const photos = [];
@@ -381,6 +392,13 @@ document.querySelectorAll('[data-effect]').forEach(btn => {
     btn.classList.toggle('active');
   });
 });
+
+document.getElementById('btnGlassStyle').addEventListener('click', () => {
+  GLASS_STYLE = !GLASS_STYLE;
+  localStorage.setItem('mb_glass', GLASS_STYLE ? '1' : '0');
+  document.getElementById('btnGlassStyle').classList.toggle('active', GLASS_STYLE);
+});
+document.getElementById('btnGlassStyle').classList.toggle('active', GLASS_STYLE);
 
 document.getElementById('volume').addEventListener('input', e => {
   audio.volume = e.target.value;
@@ -589,10 +607,34 @@ function updateParticles() {
 
 function drawParticles() {
   for (const p of particles) {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size * (0.5 + beatIntensity), 0, Math.PI * 2);
-    ctx.fillStyle = hslToStr(p.hue, 80, 60, p.life * 0.8);
-    ctx.fill();
+    if (GLASS_STYLE) {
+      const s = p.size * (0.8 + beatIntensity);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.hue * 0.1 + performance.now() / 900);
+      ctx.globalAlpha = p.life * 0.75;
+      ctx.beginPath();
+      ctx.moveTo(0, -s);
+      ctx.lineTo(s * 0.9, s * 0.65);
+      ctx.lineTo(-s * 0.7, s * 0.8);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(220,240,255,0.5)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(s * 0.05, -s * 0.25, s * 0.12, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    } else {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * (0.5 + beatIntensity), 0, Math.PI * 2);
+      ctx.fillStyle = hslToStr(p.hue, 80, 60, p.life * 0.8);
+      ctx.fill();
+    }
   }
 }
 
@@ -1071,6 +1113,179 @@ function drawGlass() {
   }
 }
 
+function drawGlassOverlay() {
+  if (!GLASS_STYLE) return;
+  const now = performance.now();
+  const auto = document.getElementById('autoColor').checked;
+
+  ctx.fillStyle = auto ? hslToStr(hueOffset % 360, 15, 92, 0.05) : 'rgba(255,255,255,0.05)';
+  ctx.fillRect(0, 0, W, H);
+
+  if (beatIntensity > 0.08) {
+    ctx.fillStyle = auto ? hslToStr((hueOffset + 200) % 360, 20, 95, beatIntensity * 0.05) : 'rgba(255,255,255,0.05)';
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  const streaks = IS_MOBILE ? 9 : 16;
+  for (let i = 0; i < streaks; i++) {
+    const speed = 0.5 + (i % 3) * 0.25;
+    const y = ((i / streaks) * H * 1.4 + now / 45 * speed) % (H * 1.4);
+    const w = 6 + Math.sin(now / 1500 + i * 1.3) * 5;
+    const grad = ctx.createLinearGradient(0, y - w, 0, y + w);
+    grad.addColorStop(0, 'rgba(255,255,255,0)');
+    grad.addColorStop(0.5, `rgba(255,255,255,${0.03 + beatIntensity * 0.05})`);
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, y - w, W, w * 2);
+  }
+
+  if (beatIntensity > 0.12) {
+    const gx = cx + Math.cos(now / 500) * W * 0.22;
+    const gr = ctx.createRadialGradient(gx, cy, 0, gx, cy, 170 + beatIntensity * 230);
+    gr.addColorStop(0, `rgba(255,255,255,${beatIntensity * 0.16})`);
+    gr.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gr;
+    ctx.fillRect(gx - 300, cy - 300, 600, 600);
+  }
+  ctx.restore();
+
+  const vg = ctx.createRadialGradient(cx, cy, Math.min(W, H) * 0.32, cx, cy, Math.max(W, H) * 0.8);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.3)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function liquidBlob(cx2, cy2, R, seed, alphaMul) {
+  const bass = getAvg(0, 0.1);
+  const mid = getAvg(0.15, 0.5);
+  const now = performance.now() + seed * 1000;
+  const n = 56;
+  ctx.beginPath();
+  for (let i = 0; i <= n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const n1 = Math.sin(a * 4 + now / 650 + mid * 4) * 0.11;
+    const n2 = Math.sin(a * 7 - now / 850 + bass * 3 + seed) * 0.06;
+    const n3 = Math.sin(a * 2 + now / 500 + seed * 2) * 0.06;
+    const n4 = Math.sin(a * 11 + now / 1100 + mid * 6) * 0.025;
+    const r = R * (1 + n1 + n2 + n3 + n4) * (1 + beatIntensity * 0.22);
+    const x = cx2 + Math.cos(a) * r;
+    const y = cy2 + Math.sin(a) * r;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  return { x: cx2, y: cy2, r: R, done: true };
+}
+
+function drawLiquidGlass() {
+  if (!effects.liquid) return;
+  const bass = getAvg(0, 0.1);
+  const mid = getAvg(0.15, 0.5);
+  const now = performance.now();
+
+  const R = Math.min(W, H) * (0.16 + bass * 0.06 * fx()) + beatIntensity * 14;
+
+  ctx.save();
+
+  if (beatIntensity > 0.1) {
+    ctx.shadowColor = 'rgba(180,220,255,0.55)';
+    ctx.shadowBlur = 30 + beatIntensity * 40;
+  }
+
+  const blob = liquidBlob(cx, cy, R, 0, 1);
+
+  ctx.fillStyle = 'rgba(200,230,255,0.045)';
+  ctx.fill();
+  ctx.strokeStyle = `rgba(220,240,255,${0.45 + beatIntensity * 0.3})`;
+  ctx.lineWidth = 1.6 + beatIntensity * 1.5;
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = 'rgba(255,255,255,0.02)';
+  ctx.fill();
+
+  const n = 56;
+  ctx.beginPath();
+  const sw = Math.sin(now / 900) * R * 0.4;
+  for (let i = 0; i <= n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const rInner = R * 0.72 + Math.sin(a * 3 + now / 700 + mid * 5) * R * 0.12 + sw * Math.sin(a * 2 + now / 900);
+    const x = cx + Math.cos(a) * Math.max(rInner, 2);
+    const y = cy + Math.sin(a) * Math.max(rInner, 2);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  const ig = ctx.createRadialGradient(cx - R * 0.25, cy - R * 0.3, R * 0.05, cx, cy, R * 0.98);
+  ig.addColorStop(0, `rgba(255,255,255,${0.10 + beatIntensity * 0.06})`);
+  ig.addColorStop(0.45, 'rgba(255,255,255,0.015)');
+  ig.addColorStop(0.8, 'rgba(170,220,255,0.03)');
+  ig.addColorStop(1, 'rgba(255,255,255,0.08)');
+  ctx.fillStyle = ig;
+  ctx.fill();
+  ctx.strokeStyle = `rgba(255,255,255,${0.12 + beatIntensity * 0.15})`;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  const hg = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.36, 1, cx - R * 0.3, cy - R * 0.36, R * 0.5);
+  hg.addColorStop(0, `rgba(255,255,255,${0.45 + beatIntensity * 0.2})`);
+  hg.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.beginPath();
+  ctx.ellipse(cx - R * 0.3, cy - R * 0.36, R * 0.34, R * 0.2, -0.5 + beatIntensity * 0.3, 0, Math.PI * 2);
+  ctx.fillStyle = hg;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(cx + R * 0.28, cy + R * 0.18, R * 0.09, R * 0.05, 0.4, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
+  ctx.fill();
+
+  const swirls = 3;
+  ctx.lineWidth = 1.2;
+  for (let i = 0; i < swirls; i++) {
+    const sa = now / 1400 + i * 2.1;
+    const sr = R * (0.25 + i * 0.2);
+    ctx.beginPath();
+    for (let k = 0; k <= 30; k++) {
+      const t = k / 30;
+      const ang = sa + t * Math.PI * 1.6;
+      const rad = sr + Math.sin(t * Math.PI + mid * 3) * R * 0.12 * (i + 1) * 0.4;
+      const x = cx + Math.cos(ang) * rad;
+      const y = cy + Math.sin(ang) * Math.min(rad, R * 0.9) * 0.7;
+      if (k === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = `rgba(220,245,255,${0.06 + mid * 0.05})`;
+    ctx.stroke();
+  }
+
+  const dropletCount = 5 + Math.floor(bass * 4 * fx());
+  for (let i = 0; i < dropletCount; i++) {
+    const a = now / 1700 + (i / dropletCount) * Math.PI * 2;
+    const d = R * (1.35 + beatIntensity * 0.25) + Math.sin(now / 500 + i * 2.4) * 12;
+    const dr = 4 + Math.random() * 8 * mid + i % 3 * 3;
+    const px = cx + Math.cos(a) * d;
+    const py = cy + Math.sin(a) * d;
+    ctx.beginPath();
+    ctx.arc(px, py, dr, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(220,240,255,0.05)';
+    ctx.fill();
+    ctx.strokeStyle = `rgba(230,245,255,${0.3 + beatIntensity * 0.2})`;
+    ctx.lineWidth = 1 + beatIntensity;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(px - dr * 0.3, py - dr * 0.32, dr * 0.22, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${0.4 + beatIntensity * 0.2})`;
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
 function drawRipples() {
   for (let i = ripples.length - 1; i >= 0; i--) {
     const r = ripples[i];
@@ -1139,6 +1354,22 @@ function drawPhoto() {
     ctx.strokeStyle = hslToStr((hueOffset + index * 40) % 360, 80, 60, 0.4 + beatIntensity * 0.5);
     ctx.lineWidth = 2;
     ctx.stroke();
+
+    if (GLASS_STYLE) {
+      ctx.beginPath();
+      ctx.arc(x - s * 0.28, y - s * 0.32, s * 0.2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + s * 0.25, y - s * 0.15, s * 0.07, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, y, s / 2 * 0.8, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,255,255,${0.1 + beatIntensity * 0.2})`;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    }
   });
 }
 
@@ -1242,6 +1473,9 @@ function animate() {
       });
     }
   }
+  if (isBeat && GLASS_STYLE) {
+    spawnShards(3 + Math.floor(beatIntensity * 8));
+  }
 
   if (effects.wave) drawWave();
   if (effects.bars) drawBars();
@@ -1263,7 +1497,9 @@ function animate() {
   if (effects.bubbles) drawBubbles();
 
   updateShards();
-  if (effects.glass) drawGlass();
+  if (effects.glass || GLASS_STYLE) drawGlass();
+
+  drawLiquidGlass();
 
   if (effects.water) drawWater();
   if (effects.stars) drawStars();
@@ -1271,6 +1507,7 @@ function animate() {
 
   if (effects.ripple) drawRipples();
   if (effects.photo) drawPhoto();
+  drawGlassOverlay();
 
   autoColorCycle();
 }
