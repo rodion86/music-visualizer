@@ -91,12 +91,9 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 <button id="btnParticles" class="active" data-effect="particles"><span data-t="particles">Частицы</span></button>
 <button id="btnWave" class="active" data-effect="wave"><span data-t="wave">Волна</span></button>
 <button id="btnRipple" class="active" data-effect="ripple"><span data-t="ripple">Риплы</span></button>
-<button id="btnTunnel" class="active" data-effect="tunnel"><span data-t="tunnel">Тоннель</span></button>
-<button id="btnSpiral" class="active" data-effect="spiral"><span data-t="spiral">Вихрь</span></button>
 <button id="btnGrid" class="active" data-effect="grid"><span data-t="grid">Сетка</span></button>
 <button id="btnStars" class="active" data-effect="stars"><span data-t="stars">Звёзды</span></button>
 <button id="btnFire" class="active" data-effect="fire"><span data-t="fire">Пламя</span></button>
-<button id="btnComets" class="active" data-effect="comets"><span data-t="comets">Кометы</span></button>
 <button id="btnWater" class="active" data-effect="water"><span data-t="water">Вода</span></button>
 <button id="btnGlass" class="active" data-effect="glass"><span data-t="glass">Стекло</span></button>
 <button id="btnGlassStyle" style="border:1px solid #9be7ff;background:rgba(255,255,255,.06)"><span data-t="glassStyle">🪟 Стекло-стиль</span></button>
@@ -142,12 +139,10 @@ const LANGS = {
     particles: 'Частицы',
     wave: 'Волна',
     ripple: 'Риплы',
-    tunnel: 'Тоннель',
     spiral: 'Вихрь',
     grid: 'Сетка',
     stars: 'Звёзды',
     fire: 'Пламя',
-    comets: 'Кометы',
     water: 'Вода',
     glass: 'Стекло',
     glassStyle: '🪟 Стекло-стиль',
@@ -192,12 +187,10 @@ const LANGS = {
     particles: 'Particles',
     wave: 'Wave',
     ripple: 'Ripples',
-    tunnel: 'Tunnel',
     spiral: 'Spiral',
     grid: 'Grid',
     stars: 'Stars',
     fire: 'Fire',
-    comets: 'Comets',
     water: 'Water',
     glass: 'Glass',
     glassStyle: '🪟 Glass style',
@@ -250,12 +243,11 @@ let beatIntensity = 0;
 let hueOffset = 0;
 let GLASS_STYLE = (localStorage.getItem('mb_glass') === null) ? true : (localStorage.getItem('mb_glass') === '1');
 
-const effects = { bars: true, circle: true, particles: true, wave: true, ripple: true, tunnel: true, spiral: true, grid: true, stars: true, fire: true, comets: true, mosaic: true, photo: true, water: true, glass: true, bubbles: true, liquid: true }; 
+const effects = { bars: true, circle: true, particles: true, wave: true, ripple: true, grid: true, stars: true, fire: true, mosaic: true, photo: true, water: true, glass: true, bubbles: true, liquid: true }; 
 
 const particles = [];
 const ripples = [];
 const fireParticles = [];
-const comets = [];
 const stars = [];
 const bubbles = [];
 const shards = [];
@@ -638,67 +630,6 @@ function drawParticles() {
   }
 }
 
-function drawTunnel() {
-  const bass = getAvg(0, 0.1);
-  const mid = getAvg(0.15, 0.4);
-  const pulse = bass * 60 * fx() + 20;
-  const rings = 24;
-  const wobble = Math.sin(performance.now() / 800) * 15;
-
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.lineWidth = 2;
-
-  for (let i = rings; i >= 1; i--) {
-    const t = (i / rings);
-    const r = (0.35 + t) * (H * 0.5) + pulse * (1 - t) + wobble * t;
-    const alpha = 0.08 + t * 0.5 + beatIntensity * 0.3;
-    const autoColor = document.getElementById('autoColor').checked;
-    ctx.beginPath();
-    ctx.arc(0, 0, Math.max(r, 2), 0, Math.PI * 2);
-    if (autoColor) {
-      ctx.strokeStyle = hslToStr((hueOffset + t * 180 + mid * 40) % 360, 80, 55 + mid * 30, alpha * 0.8);
-    } else {
-      ctx.strokeStyle = document.getElementById('colorRings').value;
-      ctx.globalAlpha = alpha * 0.8;
-    }
-    ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
-  ctx.restore();
-}
-
-function drawSpiral() {
-  const mid = getAvg(0.05, 0.5);
-  const turns = 3 + mid * 3 * fx();
-  const dots = Math.floor(160 * fx()) + 80;
-  const t = performance.now() / 900;
-
-  ctx.save();
-  ctx.translate(cx, cy);
-
-  for (let i = 0; i < dots; i++) {
-    const p = i / dots;
-    const ang = p * Math.PI * 2 * turns + t * (1 + mid);
-    const rad = Math.max(p * H * 0.45 * (1.2 - mid * 0.5), 2);
-    const x = Math.cos(ang) * rad;
-    const y = Math.sin(ang) * rad;
-    const s = (2 + mid * 6 * fx()) * (1 + beatIntensity * 0.5);
-    const autoColor = document.getElementById('autoColor').checked;
-    ctx.beginPath();
-    ctx.arc(x, y, s, 0, Math.PI * 2);
-    if (autoColor) {
-      ctx.fillStyle = hslToStr((hueOffset + p * 360) % 360, 85, 60, 0.4 + p * 0.5);
-    } else {
-      ctx.fillStyle = document.getElementById('colorParticles').value;
-      ctx.globalAlpha = 0.4 + p * 0.5;
-    }
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-  ctx.restore();
-}
-
 function drawGrid() {
   const cols = 16;
   const rows = Math.floor(cols * (H / W));
@@ -798,53 +729,6 @@ function drawFire() {
     }
     ctx.fill();
   }
-}
-
-function spawnComet() {
-  const angle = Math.random() * Math.PI * 2;
-  const dist = Math.max(W, H);
-  comets.push({
-    x: cx + Math.cos(angle) * dist,
-    y: cy + Math.sin(angle) * dist,
-    angle,
-    speed: (4 + Math.random() * 4) * fx(),
-    tail: []
-  });
-}
-
-function updateComets() {
-  for (let i = comets.length - 1; i >= 0; i--) {
-    const c = comets[i];
-    c.x -= Math.cos(c.angle) * c.speed;
-    c.y -= Math.sin(c.angle) * c.speed;
-    c.tail.push({ x: c.x, y: c.y });
-    if (c.tail.length > 20) c.tail.shift();
-    if (Math.hypot(c.x - cx, c.y - cy) < 5) comets.splice(i, 1);
-  }
-}
-
-function drawComets() {
-  const autoColor = document.getElementById('autoColor').checked;
-  const energy = getAvg(0, 0.3);
-  if (energy > 0.35 * fx() && Math.random() < 0.25) spawnComet();
-
-  for (const c of comets) {
-    for (let j = 0; j < c.tail.length; j++) {
-      const tt = c.tail[j];
-      const alpha = ((j + 1) / c.tail.length) * 0.8;
-      const s = ((j + 1) / c.tail.length) * 4;
-      ctx.beginPath();
-      ctx.arc(tt.x, tt.y, s, 0, Math.PI * 2);
-      if (autoColor) {
-        ctx.fillStyle = hslToStr((hueOffset + 200) % 360, 90, 60, alpha);
-      } else {
-        ctx.fillStyle = document.getElementById('colorParticles').value;
-        ctx.globalAlpha = alpha;
-      }
-      ctx.fill();
-    }
-  }
-  ctx.globalAlpha = 1;
 }
 
 function drawMosaic() {
@@ -1464,15 +1348,6 @@ function animate() {
       hue: (hueOffset + Math.random() * 60) % 360
     });
   }
-  if (isBeat && effects.tunnel) {
-    for (let i = 0; i < 4; i++) {
-      ripples.push({
-        radius: 5,
-        life: 1,
-        hue: (hueOffset + Math.random() * 60) % 360
-      });
-    }
-  }
   if (isBeat && GLASS_STYLE) {
     spawnShards(3 + Math.floor(beatIntensity * 8));
   }
@@ -1480,7 +1355,6 @@ function animate() {
   if (effects.wave) drawWave();
   if (effects.bars) drawBars();
   if (effects.circle) drawCircle();
-  if (effects.tunnel) drawTunnel();
   if (effects.grid) drawGrid();
   if (effects.spiral) drawSpiral();
 
@@ -1489,9 +1363,6 @@ function animate() {
 
   updateFire();
   if (effects.fire) drawFire();
-
-  updateComets();
-  if (effects.comets) drawComets();
 
   updateBubbles();
   if (effects.bubbles) drawBubbles();
