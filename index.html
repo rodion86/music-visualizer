@@ -49,55 +49,159 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 </head>
 <body>
 <canvas id="canvas"></canvas>
-<div class="title">MUSIC VISUALIZER</div>
-<div class="photo-hint" id="photoHint">Перетащи сюда музыку, видео или фото<span>видео будет играть только звуком</span></div>
+<div class="title" id="pageTitle">MUSIC BASS</div>
+<div class="photo-hint" id="photoHint"><span data-t="photoHint">Перетащи сюда музыку, видео или фото</span><span data-t="photoHintSub">видео будет играть только звуком</span></div>
 
 <button class="toggle-btn" id="toggleSettings">&#9881;</button>
 
 <div class="settings-panel" id="settingsPanel">
-<button id="closeSettings">✕ Закрыть</button>
-<h3>Настройки</h3>
-<label>Чувствительность <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1.5"></label>
-<label>Сила отскока <input type="range" id="bounceForce" min="0" max="50" step="1" value="20"></label>
-<label>Количество частиц <input type="range" id="particleCount" min="0" max="300" step="10" value="120"></label>
-<label>Скорость частиц <input type="range" id="particleSpeed" min="0.5" max="5" step="0.1" value="2"></label>
-<label>Толщина полос <input type="range" id="barWidth" min="1" max="8" step="0.5" value="3"></label>
-<label>Радиус кольца <input type="range" id="ringRadius" min="50" max="250" step="5" value="130"></label>
-<label>Интенсивность эффектов <input type="range" id="fxIntensity" min="10" max="100" step="5" value="60"></label>
-<label>Трейл (шлейф) <input type="range" id="trailLength" min="0" max="40" step="1" value="10"></label>
-<label>Фото размер <input type="range" id="photoSize" min="40" max="300" step="5" size="100"></label>
-<label>Загрузить фото <input type="file" id="photoFile" accept="image/*" multiple></label>
-<button id="clearPhotos">Убрать все фото</button>
+<button id="closeSettings"><span data-t="closeSettings">✕ Закрыть</span></button>
+<h3 data-t="settingsTitle">Настройки</h3>
+<div style="display:flex;gap:8px;margin-bottom:10px">
+<button id="langBtn" data-t="langBtn" style="width:auto;margin-bottom:0">EN</button>
+</div>
+<label><span data-t="sensitivity">Чувствительность</span> <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1.5"></label>
+<label><span data-t="bounceForce">Сила отскока</span> <input type="range" id="bounceForce" min="0" max="50" step="1" value="20"></label>
+<label><span data-t="particleCount">Количество частиц</span> <input type="range" id="particleCount" min="0" max="300" step="10" value="120"></label>
+<label><span data-t="particleSpeed">Скорость частиц</span> <input type="range" id="particleSpeed" min="0.5" max="5" step="0.1" value="2"></label>
+<label><span data-t="barWidth">Толщина полос</span> <input type="range" id="barWidth" min="1" max="8" step="0.5" value="3"></label>
+<label><span data-t="ringRadius">Радиус кольца</span> <input type="range" id="ringRadius" min="50" max="250" step="5" value="130"></label>
+<label><span data-t="fxIntensity">Интенсивность эффектов</span> <input type="range" id="fxIntensity" min="10" max="100" step="5" value="60"></label>
+<label><span data-t="trailLength">Трейл (шлейф)</span> <input type="range" id="trailLength" min="0" max="40" step="1" value="10"></label>
+<label><span data-t="photoSize">Фото размер</span> <input type="range" id="photoSize" min="40" max="300" step="5" size="100"></label>
+<label><span data-t="photoFile">Загрузить фото</span> <input type="file" id="photoFile" accept="image/*" multiple></label>
+<button id="clearPhotos"><span data-t="clearPhotos">Убрать все фото</span></button>
 <hr style="border-color:rgba(255,255,255,.1);margin:6px 0">
-<label>Цвет полос <input type="color" id="colorBars" value="#ff4081"></label>
-<label>Цвет частиц <input type="color" id="colorParticles" value="#7c4dff"></label>
-<label>Цвет фона <input type="color" id="colorBg" value="#0a0a0a"></label>
-<label>Цвет колец <input type="color" id="colorRings" value="#00e5ff"></label>
-<label>Авто-смена цвета <input type="checkbox" id="autoColor" checked></label>
+<label><span data-t="colorBars">Цвет полос</span> <input type="color" id="colorBars" value="#ff4081"></label>
+<label><span data-t="colorParticles">Цвет частиц</span> <input type="color" id="colorParticles" value="#7c4dff"></label>
+<label><span data-t="colorBg">Цвет фона</span> <input type="color" id="colorBg" value="#0a0a0a"></label>
+<label><span data-t="colorRings">Цвет колец</span> <input type="color" id="colorRings" value="#00e5ff"></label>
+<label><span data-t="autoColor">Авто-смена цвета</span> <input type="checkbox" id="autoColor" checked></label>
 </div>
 
 <div class="controls">
-<label class="file-label">&#9654; Музыка или видео<input type="file" id="audioFile" accept="audio/*,video/*"></label>
-<label class="file-label" style="background:linear-gradient(135deg,#00e5ff,#7c4dff)">&#127909; Видео (только звук)<input type="file" id="videoFile" accept="video/*"></label>
-<button id="btnCapture" style="background:linear-gradient(135deg,#1db954,#0a7d34);border:none">🎧 Звук из приложений</button>
-<button id="btnSpotify" style="background:linear-gradient(135deg,#1db954,#191414);border:none">🎵 Открыть Spotify</button>
-<button id="btnBars" class="active" data-effect="bars">Полосы</button>
-<button id="btnCircle" class="active" data-effect="circle">Кольцо</button>
-<button id="btnParticles" class="active" data-effect="particles">Частицы</button>
-<button id="btnWave" class="active" data-effect="wave">Волна</button>
-<button id="btnRipple" class="active" data-effect="ripple">Риплы</button>
-<button id="btnTunnel" class="active" data-effect="tunnel">Тоннель</button>
-<button id="btnSpiral" class="active" data-effect="spiral">Вихрь</button>
-<button id="btnGrid" class="active" data-effect="grid">Сетка</button>
-<button id="btnStars" class="active" data-effect="stars">Звёзды</button>
-<button id="btnFire" class="active" data-effect="fire">Пламя</button>
-<button id="btnComets" class="active" data-effect="comets">Кометы</button>
-<button id="btnMosaic" class="active" data-effect="mosaic">Мозаика</button>
-<button id="btnPhoto" class="active" data-effect="photo">Фото</button>
-<label>Громкость <input type="range" id="volume" min="0" max="1" step="0.01" value="0.7"></label>
+<label class="file-label"><span data-t="loadAudio">▶ Музыка или видео</span><input type="file" id="audioFile" accept="audio/*,video/*"></label>
+<label class="file-label" style="background:linear-gradient(135deg,#00e5ff,#7c4dff)"><span data-t="loadVideo">🎬 Видео (только звук)</span><input type="file" id="videoFile" accept="video/*"></label>
+<button id="btnCapture" style="background:linear-gradient(135deg,#1db954,#0a7d34);border:none"><span data-t="captureBtn">🎧 Звук из приложений</span></button>
+<button id="btnSpotify" style="background:linear-gradient(135deg,#1db954,#191414);border:none"><span data-t="spotifyBtn">🎵 Открыть Spotify</span></button>
+<button id="btnBars" class="active" data-effect="bars"><span data-t="bars">Полосы</span></button>
+<button id="btnCircle" class="active" data-effect="circle"><span data-t="circle">Кольцо</span></button>
+<button id="btnParticles" class="active" data-effect="particles"><span data-t="particles">Частицы</span></button>
+<button id="btnWave" class="active" data-effect="wave"><span data-t="wave">Волна</span></button>
+<button id="btnRipple" class="active" data-effect="ripple"><span data-t="ripple">Риплы</span></button>
+<button id="btnTunnel" class="active" data-effect="tunnel"><span data-t="tunnel">Тоннель</span></button>
+<button id="btnSpiral" class="active" data-effect="spiral"><span data-t="spiral">Вихрь</span></button>
+<button id="btnGrid" class="active" data-effect="grid"><span data-t="grid">Сетка</span></button>
+<button id="btnStars" class="active" data-effect="stars"><span data-t="stars">Звёзды</span></button>
+<button id="btnFire" class="active" data-effect="fire"><span data-t="fire">Пламя</span></button>
+<button id="btnComets" class="active" data-effect="comets"><span data-t="comets">Кометы</span></button>
+<button id="btnMosaic" class="active" data-effect="mosaic"><span data-t="mosaic">Мозаика</span></button>
+<button id="btnPhoto" class="active" data-effect="photo"><span data-t="photo">Фото</span></button>
+<label><span data-t="volume">Громкость</span> <input type="range" id="volume" min="0" max="1" step="0.01" value="0.7"></label>
 </div>
 
 <script>
+const LANGS = {
+  ru: {
+    photoHint: 'Перетащи сюда музыку, видео или фото',
+    photoHintSub: 'видео будет играть только звуком',
+    closeSettings: '✕ Закрыть',
+    settingsTitle: 'Настройки',
+    sensitivity: 'Чувствительность',
+    bounceForce: 'Сила отскока',
+    particleCount: 'Количество частиц',
+    particleSpeed: 'Скорость частиц',
+    barWidth: 'Толщина полос',
+    ringRadius: 'Радиус кольца',
+    fxIntensity: 'Интенсивность эффектов',
+    trailLength: 'Трейл (шлейф)',
+    photoSize: 'Фото размер',
+    photoFile: 'Загрузить фото',
+    clearPhotos: 'Убрать все фото',
+    colorBars: 'Цвет полос',
+    colorParticles: 'Цвет частиц',
+    colorBg: 'Цвет фона',
+    colorRings: 'Цвет колец',
+    autoColor: 'Авто-смена цвета',
+    loadAudio: '▶ Музыка или видео',
+    loadVideo: '🎬 Видео (только звук)',
+    captureBtn: '🎧 Звук из приложений',
+    captureStop: '⏹ Остановить звук',
+    spotifyBtn: '🎵 Открыть Spotify',
+    bars: 'Полосы',
+    circle: 'Кольцо',
+    particles: 'Частицы',
+    wave: 'Волна',
+    ripple: 'Риплы',
+    tunnel: 'Тоннель',
+    spiral: 'Вихрь',
+    grid: 'Сетка',
+    stars: 'Звёзды',
+    fire: 'Пламя',
+    comets: 'Кометы',
+    mosaic: 'Мозаика',
+    photo: 'Фото',
+    volume: 'Громкость',
+    langBtn: 'EN',
+    captureError: 'Не удалось захватить звук. В окне выбора обязательно включи галочку «Поделиться аудио».'
+  },
+  en: {
+    photoHint: 'Drop music, video or photos here',
+    photoHintSub: 'video plays audio only',
+    closeSettings: '✕ Close',
+    settingsTitle: 'Settings',
+    sensitivity: 'Sensitivity',
+    bounceForce: 'Bounce force',
+    particleCount: 'Particle count',
+    particleSpeed: 'Particle speed',
+    barWidth: 'Bar width',
+    ringRadius: 'Ring radius',
+    fxIntensity: 'Effects intensity',
+    trailLength: 'Trail',
+    photoSize: 'Photo size',
+    photoFile: 'Upload photo',
+    clearPhotos: 'Clear all photos',
+    colorBars: 'Bar color',
+    colorParticles: 'Particle color',
+    colorBg: 'Background color',
+    colorRings: 'Ring color',
+    autoColor: 'Auto color cycle',
+    loadAudio: '▶ Music or video',
+    loadVideo: '🎬 Video (audio only)',
+    captureBtn: '🎧 Capture app sound',
+    captureStop: '⏹ Stop sound',
+    spotifyBtn: '🎵 Open Spotify',
+    bars: 'Bars',
+    circle: 'Circle',
+    particles: 'Particles',
+    wave: 'Wave',
+    ripple: 'Ripples',
+    tunnel: 'Tunnel',
+    spiral: 'Spiral',
+    grid: 'Grid',
+    stars: 'Stars',
+    fire: 'Fire',
+    comets: 'Comets',
+    mosaic: 'Mosaic',
+    photo: 'Photo',
+    volume: 'Volume',
+    langBtn: 'RU',
+    captureError: 'Failed to capture sound. In the picker, make sure to enable "Share audio".'
+  }
+};
+
+let currentLang = localStorage.getItem('mb_lang') || 'ru';
+function t(key) { return (LANGS[currentLang] || LANGS.ru)[key] || key; }
+
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('mb_lang', lang);
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-t'));
+  });
+}
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 let W, H, cx, cy;
@@ -181,6 +285,11 @@ let captureStream = null;
 let captureSource = null;
 let captureOn = false;
 
+function setCaptureLabel(key) {
+  const span = document.querySelector('#btnCapture span');
+  if (span) span.textContent = t(key);
+}
+
 document.getElementById('btnCapture').addEventListener('click', async () => {
   if (captureOn) {
     captureStream.getTracks().forEach(t => t.stop());
@@ -189,7 +298,7 @@ document.getElementById('btnCapture').addEventListener('click', async () => {
       captureSource.disconnect();
       captureSource = null;
     }
-    document.getElementById('btnCapture').textContent = '🎧 Звук из приложений';
+    setCaptureLabel('captureBtn');
     isPlaying = false;
     return;
   }
@@ -210,16 +319,16 @@ document.getElementById('btnCapture').addEventListener('click', async () => {
     captureSource.connect(analyser);
     captureOn = true;
     isPlaying = true;
-    document.getElementById('btnCapture').textContent = '⏹ Остановить звук';
+    setCaptureLabel('captureStop');
 
     captureStream.oninactive = () => {
       captureOn = false;
       if (captureSource) captureSource.disconnect();
-      document.getElementById('btnCapture').textContent = '🎧 Звук из приложений';
+      setCaptureLabel('captureBtn');
       isPlaying = false;
     };
   } catch (err) {
-    alert('Не удалось захватить звук. В окне выбора обязательно включи галочку «Поделиться аудио / Share audio».');
+    alert(t('captureError'));
     console.error(err);
   }
 });
@@ -228,11 +337,17 @@ document.getElementById('btnSpotify').addEventListener('click', () => {
   window.open('https://open.spotify.com', '_blank');
 });
 
+applyLang(currentLang);
+
 document.getElementById('toggleSettings').addEventListener('click', () => {
   document.getElementById('settingsPanel').classList.toggle('show');
 });
 document.getElementById('closeSettings').addEventListener('click', () => {
   document.getElementById('settingsPanel').classList.remove('show');
+});
+document.getElementById('langBtn').addEventListener('click', () => {
+  document.getElementById('settingsPanel').classList.remove('show');
+  applyLang(currentLang === 'ru' ? 'en' : 'ru');
 });
 
 document.querySelectorAll('[data-effect]').forEach(btn => {
