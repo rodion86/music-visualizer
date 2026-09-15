@@ -62,6 +62,8 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 <div class="controls">
 <label class="file-label">&#9654; Музыка или видео<input type="file" id="audioFile" accept="audio/*,video/*"></label>
 <label class="file-label" style="background:linear-gradient(135deg,#00e5ff,#7c4dff)">&#127909; Видео (только звук)<input type="file" id="videoFile" accept="video/*"></label>
+<button id="btnCapture" style="background:linear-gradient(135deg,#1db954,#0a7d34);border:none">🎧 Звук из приложений</button>
+<button id="btnSpotify" style="background:linear-gradient(135deg,#1db954,#191414);border:none">🎵 Открыть Spotify</button>
 <button id="btnBars" class="active" data-effect="bars">Полосы</button>
 <button id="btnCircle" class="active" data-effect="circle">Кольцо</button>
 <button id="btnParticles" class="active" data-effect="particles">Частицы</button>
@@ -140,12 +142,69 @@ function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   analyser = audioCtx.createAnalyser();
   analyser.fftSize = 512;
-  source = audioCtx.createMediaElementSource(audio);
-  source.connect(analyser);
+  bindFileSource();
   analyser.connect(audioCtx.destination);
   bufferLength = analyser.frequencyBinCount;
   dataArray = new Uint8Array(bufferLength);
 }
+
+function bindFileSource() {
+  if (!source) {
+    source = audioCtx.createMediaElementSource(audio);
+    source.connect(analyser);
+  }
+}
+
+let captureStream = null;
+let captureSource = null;
+let captureOn = false;
+
+document.getElementById('btnCapture').addEventListener('click', async () => {
+  if (captureOn) {
+    captureStream.getTracks().forEach(t => t.stop());
+    captureOn = false;
+    if (captureSource) {
+      captureSource.disconnect();
+      captureSource = null;
+    }
+    document.getElementById('btnCapture').textContent = '🎧 Звук из приложений';
+    isPlaying = false;
+    return;
+  }
+  try {
+    if (!audioCtx) initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    audio.pause();
+
+    captureStream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+    });
+
+    const vTrack = captureStream.getVideoTracks()[0];
+    if (vTrack) vTrack.stop();
+
+    captureSource = audioCtx.createMediaStreamSource(captureStream);
+    captureSource.connect(analyser);
+    captureOn = true;
+    isPlaying = true;
+    document.getElementById('btnCapture').textContent = '⏹ Остановить звук';
+
+    captureStream.oninactive = () => {
+      captureOn = false;
+      if (captureSource) captureSource.disconnect();
+      document.getElementById('btnCapture').textContent = '🎧 Звук из приложений';
+      isPlaying = false;
+    };
+  } catch (err) {
+    alert('Не удалось захватить звук. В окне выбора обязательно включи галочку «Поделиться аудио / Share audio».');
+    console.error(err);
+  }
+});
+
+document.getElementById('btnSpotify').addEventListener('click', () => {
+  window.open('https://open.spotify.com', '_blank');
+});
 
 document.getElementById('toggleSettings').addEventListener('click', () => {
   document.getElementById('settingsPanel').classList.toggle('show');
