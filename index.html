@@ -56,17 +56,23 @@ body.auto-hide .controls{transform:translateY(120%);will-change:transform}
 .epi-btn{display:inline-block;padding:12px 26px;border-radius:12px;background:linear-gradient(135deg,#ffc233,#ff8c00);border:none;color:#000;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk','Segoe UI',sans-serif;transition:transform .2s,box-shadow .2s}
 .epi-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,170,0,.35)}
 @media (max-width:768px){
-  .controls{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-left:14px;padding-right:14px}
+  .controls{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;padding-left:14px;padding-right:14px;gap:8px}
   .controls::-webkit-scrollbar{display:none}
-  .controls button{font-size:12px;padding:8px 11px}
-  .file-label{font-size:12px;padding:8px 12px}
+  .controls button{font-size:13px;padding:11px 14px;min-height:44px}
+  .file-label{font-size:13px;padding:11px 14px;min-height:44px}
+  .controls input[type=range]{width:120px;min-width:120px}
+  .controls input[type=color]{width:32px;height:32px}
   .controls label{flex-shrink:0}
-  .settings-panel{top:0;right:0;bottom:0;left:0;width:100%;height:100%;border-radius:0;overflow-y:auto;padding:56px 16px calc(20px + env(safe-area-inset-bottom));z-index:30}
-  .settings-panel h3{font-size:16px;margin-bottom:14px}
-  .settings-panel label{font-size:14px}
-  .toggle-btn{top:12px;right:12px;width:44px;height:44px;font-size:20px;z-index:31}
-  .title{font-size:12px}
-  .photo-hint{font-size:14px}
+  .settings-panel{top:0;right:0;bottom:0;left:0;width:100%;height:100%;border-radius:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(60px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));z-index:30}
+  .settings-panel h3{font-size:17px;margin-bottom:14px}
+  .settings-panel label{font-size:15px;min-height:46px;margin-bottom:12px}
+  .settings-panel label input[type=range]{width:130px}
+  .settings-panel input[type=color]{width:32px;height:32px}
+  .settings-panel button{padding:13px;font-size:14px;margin-bottom:8px}
+  .toggle-btn{top:calc(14px + env(safe-area-inset-top));right:14px;width:46px;height:46px;font-size:20px;z-index:31}
+  .title{top:calc(16px + env(safe-area-inset-top));font-size:12px}
+  .photo-hint{font-size:13px;padding:0 16px;white-space:normal}
+  .epi-card{padding:24px 20px;margin:0 8px}
 }
 </style>
 </head>
@@ -264,7 +270,7 @@ function resize() {
   H = window.innerHeight;
   cx = W / 2;
   cy = H / 2;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, IS_MOBILE ? 1.5 : 2);
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
