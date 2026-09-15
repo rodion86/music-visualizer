@@ -2,33 +2,49 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Music Bass</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hidden;height:100vh;display:flex;flex-direction:column}
-#canvas{flex:1;display:block}
-.controls{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);padding:12px 20px;display:flex;align-items:center;gap:14px;z-index:10;border-top:1px solid rgba(255,255,255,.08);flex-wrap:wrap;justify-content:center}
+html,body{height:100%}
+body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hidden;height:100vh;height:100dvh;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#canvas{flex:1;display:block;touch-action:none}
+.controls{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;z-index:10;border-top:1px solid rgba(255,255,255,.08);flex-wrap:wrap;justify-content:center}
 .controls label{font-size:12px;color:#aaa;cursor:pointer;display:flex;align-items:center;gap:6px}
 .controls input[type=range]{width:80px;accent-color:#ff4081}
 .controls input[type=color]{width:28px;height:28px;border:none;border-radius:50%;cursor:pointer;background:none;padding:0}
-.controls button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;transition:.2s}
+.controls button,.file-label{flex-shrink:0;-webkit-user-select:none;user-select:none}
+.controls button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;padding:8px 14px;border-radius:22px;cursor:pointer;font-size:13px;transition:.2s;min-height:38px}
 .controls button:hover{background:rgba(255,255,255,.2)}
 .controls button.active{background:#ff4081;border-color:#ff4081}
-.file-label{background:linear-gradient(135deg,#ff4081,#7c4dff);padding:6px 16px;border-radius:20px;cursor:pointer;font-size:12px;transition:.2s}
+.file-label{background:linear-gradient(135deg,#ff4081,#7c4dff);padding:8px 16px;border-radius:22px;cursor:pointer;font-size:13px;transition:.2s;min-height:38px;color:#fff;display:flex;align-items:center;gap:6px}
 .file-label:hover{opacity:.85}
-#audioFile{display:none}
-.settings-panel{position:fixed;top:12px;right:12px;background:rgba(10,10,10,.88);backdrop-filter:blur(12px);border-radius:14px;padding:14px;z-index:10;width:220px;border:1px solid rgba(255,255,255,.08);display:none}
+#audioFile,#videoFile{display:none}
+.settings-panel{position:fixed;top:12px;right:12px;background:rgba(10,10,10,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:14px;padding:14px;z-index:10;width:230px;border:1px solid rgba(255,255,255,.08);display:none}
 .settings-panel.show{display:block}
 .settings-panel h3{font-size:13px;margin-bottom:10px;color:#ff4081}
-.settings-panel label{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#aaa;margin-bottom:8px}
+.settings-panel label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#aaa;margin-bottom:10px;min-height:30px}
 .settings-panel input[type=range]{width:90px;accent-color:#ff4081}
-.settings-panel input[type=color]{width:24px;height:24px;border:none;border-radius:50%;cursor:pointer}
-.toggle-btn{position:fixed;top:12px;right:12px;z-index:11;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.settings-panel input[type=color]{width:28px;height:28px;border:none;border-radius:50%;cursor:pointer;background:none;padding:0}
+.settings-panel button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;padding:8px 12px;border-radius:20px;cursor:pointer;font-size:12px;width:100%;margin-bottom:6px}
+.toggle-btn{position:fixed;top:12px;right:12px;z-index:11;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none}
 .title{position:fixed;top:12px;left:12px;font-size:14px;color:rgba(255,255,255,.4);z-index:10;pointer-events:none}
-.photo-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,.15);font-size:16px;pointer-events:none;z-index:5;text-align:center;display:none}
+.photo-hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,.15);font-size:16px;pointer-events:none;z-index:5;text-align:center;display:none;white-space:nowrap}
 .photo-hint span{display:block;font-size:11px;margin-top:4px}
+@media (max-width:768px){
+  .controls{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-left:14px;padding-right:14px}
+  .controls::-webkit-scrollbar{display:none}
+  .controls button{font-size:12px;padding:8px 11px}
+  .file-label{font-size:12px;padding:8px 12px}
+  .controls label{flex-shrink:0}
+  .settings-panel{top:0;right:0;bottom:0;left:0;width:100%;height:100%;border-radius:0;overflow-y:auto;padding:56px 16px calc(20px + env(safe-area-inset-bottom));z-index:30}
+  .settings-panel h3{font-size:16px;margin-bottom:14px}
+  .settings-panel label{font-size:14px}
+  .toggle-btn{top:12px;right:12px;width:44px;height:44px;font-size:20px;z-index:31}
+  .title{font-size:12px}
+  .photo-hint{font-size:14px}
+}
 </style>
 </head>
 <body>
@@ -39,6 +55,7 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 <button class="toggle-btn" id="toggleSettings">&#9881;</button>
 
 <div class="settings-panel" id="settingsPanel">
+<button id="closeSettings">✕ Закрыть</button>
 <h3>Настройки</h3>
 <label>Чувствительность <input type="range" id="sensitivity" min="0.5" max="3" step="0.1" value="1.5"></label>
 <label>Сила отскока <input type="range" id="bounceForce" min="0" max="50" step="1" value="20"></label>
@@ -84,12 +101,17 @@ body{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;overflow:hi
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 let W, H, cx, cy;
+const IS_MOBILE = window.matchMedia('(max-width: 768px)').matches;
 
 function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
+  W = window.innerWidth;
+  H = window.innerHeight;
   cx = W / 2;
   cy = H / 2;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 resize();
 window.addEventListener('resize', resize);
@@ -111,7 +133,7 @@ const comets = [];
 const stars = [];
 
 function fx() {
-  return parseInt(document.getElementById('fxIntensity').value) / 60;
+  return (parseInt(document.getElementById('fxIntensity').value) / 60) * (IS_MOBILE ? 0.65 : 1);
 }
 
 const photos = [];
@@ -208,6 +230,9 @@ document.getElementById('btnSpotify').addEventListener('click', () => {
 
 document.getElementById('toggleSettings').addEventListener('click', () => {
   document.getElementById('settingsPanel').classList.toggle('show');
+});
+document.getElementById('closeSettings').addEventListener('click', () => {
+  document.getElementById('settingsPanel').classList.remove('show');
 });
 
 document.querySelectorAll('[data-effect]').forEach(btn => {
@@ -524,7 +549,7 @@ function drawGrid() {
 }
 
 function drawStars() {
-  const count = 120;
+  const count = IS_MOBILE ? 60 : 120;
   const autoColor = document.getElementById('autoColor').checked;
   for (let i = 0; i < count; i++) {
     stars[i] = stars[i] || {
@@ -738,37 +763,54 @@ function drawPhoto() {
   });
 }
 
-canvas.addEventListener('mousedown', e => {
+function downAt(x, y) {
+  if (photoDragIndex !== null) return;
   const baseSize = parseFloat(document.getElementById('photoSize').value) || 100;
   for (let i = photos.length - 1; i >= 0; i--) {
     const ph = photos[i];
     const size = baseSize * ph.sizeMult;
-    const x = cx + Math.cos(ph.orbitAngle) * ph.orbitRadius;
-    const y = cy + Math.sin(ph.orbitAngle) * ph.orbitRadius;
-    const dist = Math.hypot(e.clientX - x, e.clientY - y);
-    if (dist < size / 2 + 6) {
+    const px = cx + Math.cos(ph.orbitAngle) * ph.orbitRadius;
+    const py = cy + Math.sin(ph.orbitAngle) * ph.orbitRadius;
+    const dist = Math.hypot(x - px, y - py);
+    if (dist < size / 2 + 10) {
       photoDragIndex = i;
       break;
     }
   }
-});
+}
 
-canvas.addEventListener('mousemove', e => {
+function moveAt(x, y) {
   if (photoDragIndex === null) return;
   const ph = photos[photoDragIndex];
-  const dx = e.clientX - cx;
-  const dy = e.clientY - cy;
+  const dx = x - cx;
+  const dy = y - cy;
   ph.orbitRadius = Math.hypot(dx, dy);
   ph.orbitAngle = Math.atan2(dy, dx);
-});
+}
 
-canvas.addEventListener('mouseup', () => {
+function upAt() {
   photoDragIndex = null;
-});
+}
 
-canvas.addEventListener('mouseleave', () => {
-  photoDragIndex = null;
-});
+canvas.addEventListener('mousedown', e => downAt(e.clientX, e.clientY));
+canvas.addEventListener('mousemove', e => moveAt(e.clientX, e.clientY));
+canvas.addEventListener('mouseup', upAt);
+canvas.addEventListener('mouseleave', upAt);
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    downAt(t.clientX, t.clientY);
+  }
+}, { passive: true });
+canvas.addEventListener('touchmove', e => {
+  if (photoDragIndex !== null && e.touches.length === 1) {
+    e.preventDefault();
+    const t = e.touches[0];
+    moveAt(t.clientX, t.clientY);
+  }
+}, { passive: false });
+canvas.addEventListener('touchend', upAt);
+canvas.addEventListener('touchcancel', upAt);
 
 function autoColorCycle() {
   if (document.getElementById('autoColor').checked) {
