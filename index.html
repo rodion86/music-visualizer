@@ -5,10 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title></title>
 <style>
-html,body{margin:0;padding:0;height:100%}
-body{background:#ffffff;overflow:hidden}
+:root{--ac:#fff;--bg:#000}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:'Space Grotesk','Segoe UI',sans-serif;background:var(--bg);color:#fff;min-height:100vh;overflow:hidden;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-orb{position:absolute;border-radius:50%;filter:blur(100px);animation:orbFloat 20s ease-in-out infinite;background:radial-gradient(circle,color-mix(in srgb,var(--ac) 7%,transparent),transparent)}
+.bg-orb:nth-child(1){width:700px;height:700px;top:-20%;left:5%;animation-delay:0s}
+.bg-orb:nth-child(2){width:500px;height:500px;bottom:-15%;right:0%;animation-delay:-7s}
+.bg-orb:nth-child(3){width:450px;height:450px;top:40%;left:55%;animation-delay:-14s}
+.bg-orb:nth-child(4){width:350px;height:350px;top:70%;left:20%;animation-delay:-3s}
+@keyframes orbFloat{0%{transform:translate(0,0) scale(1) rotate(0deg)}25%{transform:translate(60px,-40px) scale(1.15) rotate(90deg)}50%{transform:translate(-20px,60px) scale(.85) rotate(180deg)}75%{transform:translate(-50px,-20px) scale(1.1) rotate(270deg)}100%{transform:translate(0,0) scale(1) rotate(360deg)}}
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(color-mix(in srgb,var(--ac) 4%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--ac) 4%,transparent) 1px,transparent 1px);background-size:80px 80px}
+.bg-grid::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--ac) 6%,transparent),transparent 70%)}
+.bg-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.35) 80%,transparent 100%)}
+.bg-line{position:absolute;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--ac) 15%,transparent),transparent);animation:lineScan 8s ease-in-out infinite}
+.bg-line:nth-child(6){top:30%;left:0;right:0;animation-delay:0s}
+.bg-line:nth-child(7){top:60%;left:0;right:0;animation-delay:-4s}
+@keyframes lineScan{0%{opacity:0;transform:translateX(-100%)}50%{opacity:1}100%{opacity:0;transform:translateX(100%)}}
 </style>
 </head>
 <body>
+<div class="bg">
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-orb"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-vignette"></div>
+  <div class="bg-line"></div>
+  <div class="bg-line"></div>
+</div>
 </body>
 </html>
