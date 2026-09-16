@@ -28,6 +28,16 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
 .hero{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;padding:0 20px}
 .hero-big{font-family:'Space Grotesk','Segoe UI',sans-serif;font-size:clamp(3.5rem,14vw,10rem);font-weight:700;letter-spacing:-4px;line-height:1;color:var(--ac);text-shadow:0 0 80px color-mix(in srgb,var(--ac) 18%,transparent),0 0 200px color-mix(in srgb,var(--ac) 10%,transparent);opacity:0;animation:fadeUp .8s ease forwards}
 .hero-sub{font-family:'JetBrains Mono','Space Grotesk',monospace;font-size:clamp(.85rem,2.4vw,1.3rem);letter-spacing:8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:22px;opacity:0;animation:fadeUp .8s ease forwards;animation-delay:.2s}
+.hero-btns{display:flex;gap:14px;justify-content:center;margin-top:36px;opacity:0;animation:fadeUp .8s ease forwards;animation-delay:.35s}
+.hero-btn{font-family:'Space Grotesk','Segoe UI',sans-serif;padding:14px 34px;border-radius:10px;font-size:.95rem;font-weight:700;letter-spacing:.3px;cursor:pointer;text-decoration:none;position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1)}
+.hero-btn span{position:relative;z-index:1}
+.hero-btn::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,.08);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.hero-btn:hover::before{transform:scaleX(1)}
+.hero-btn.primary{background:var(--ac);color:#000;border:1px solid var(--ac)}
+.hero-btn.primary:hover{transform:translateY(-3px);box-shadow:0 14px 40px color-mix(in srgb,var(--ac) 22%,transparent)}
+.hero-btn.primary::before{display:none}
+.hero-btn.ghost{border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.65);background:transparent}
+.hero-btn.ghost:hover{color:#fff;border-color:rgba(255,255,255,.35);transform:translateY(-3px)}
 @keyframes fadeUp{0%{opacity:0;transform:translateY(24px)}100%{opacity:1;transform:translateY(0)}}
 </style>
 </head>
@@ -45,6 +55,10 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
 <div class="hero">
   <div class="hero-big">BURATINO</div>
   <div class="hero-sub">client</div>
+  <div class="hero-btns">
+    <a class="hero-btn primary" href="#"><span>Скачать</span></a>
+    <a class="hero-btn ghost" href="#"><span>FAQ</span></a>
+  </div>
 </div>
 </body>
 </html>
