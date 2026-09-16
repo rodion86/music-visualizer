@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BURATINO CLIENT</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
 <style>
 :root{--ac:#fff;--bg:#000}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -26,7 +26,10 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
 .bg-line:nth-child(7){top:60%;left:0;right:0;animation-delay:-4s}
 @keyframes lineScan{0%{opacity:0;transform:translateX(-100%)}50%{opacity:1}100%{opacity:0;transform:translateX(100%)}}
 .hero{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;padding:0 20px}
-.hero-big{font-family:'Space Grotesk','Segoe UI',sans-serif;font-size:clamp(3.5rem,14vw,10rem);font-weight:700;letter-spacing:-4px;line-height:1;color:var(--ac);text-shadow:0 0 80px color-mix(in srgb,var(--ac) 18%,transparent),0 0 200px color-mix(in srgb,var(--ac) 10%,transparent);opacity:0;animation:fadeUp .8s ease forwards}
+.hero-big{font-family:'Montserrat','Space Grotesk','Segoe UI',sans-serif;font-size:clamp(3.5rem,14vw,10rem);font-weight:900;letter-spacing:2px;line-height:1;text-transform:uppercase;color:var(--ac);position:relative;padding-bottom:16px;pointer-events:auto;cursor:default;text-shadow:0 0 80px color-mix(in srgb,var(--ac) 18%,transparent),0 0 200px color-mix(in srgb,var(--ac) 10%,transparent);transition:text-shadow .4s;opacity:0;animation:fadeUp .8s ease forwards}
+.hero-big::after{content:'';position:absolute;left:15%;right:15%;bottom:0;height:4px;border-radius:4px;background:linear-gradient(90deg,transparent,#22c55e,transparent);opacity:0;transition:opacity .4s,box-shadow .4s}
+.hero-big:hover::after{opacity:1;box-shadow:0 0 16px rgba(34,197,94,.95),0 0 44px rgba(34,197,94,.45)}
+.hero-big:hover{text-shadow:0 0 80px color-mix(in srgb,#22c55e 22%,transparent),0 0 220px color-mix(in srgb,#22c55e 12%,transparent)}
 .hero-sub{font-family:'JetBrains Mono','Space Grotesk',monospace;font-size:clamp(.85rem,2.4vw,1.3rem);letter-spacing:8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:22px;opacity:0;animation:fadeUp .8s ease forwards;animation-delay:.2s}
 .hero-btns{display:flex;gap:14px;justify-content:center;margin-top:36px;opacity:0;animation:fadeUp .8s ease forwards;animation-delay:.35s}
 .hero-btn{font-family:'Space Grotesk','Segoe UI',sans-serif;padding:14px 34px;border-radius:10px;font-size:.95rem;font-weight:700;letter-spacing:.3px;cursor:pointer;text-decoration:none;position:relative;overflow:hidden;pointer-events:auto;transition:all .3s cubic-bezier(.4,0,.2,1)}
