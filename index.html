@@ -70,7 +70,7 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
   <div class="hero-sub">client</div>
   <div class="hero-btns">
     <a class="hero-btn primary" id="dlBtn" href="#"><span>Скачать</span></a>
-    <a class="hero-btn ghost" href="#"><span>FAQ</span></a>
+    <a class="hero-btn ghost" id="faqBtn" href="#"><span>FAQ</span></a>
   </div>
 </div>
 <div class="modal" id="downloadModal">
@@ -84,6 +84,17 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
     </div>
   </div>
 </div>
+<div class="modal" id="faqModal">
+  <div class="modal-card">
+    <div class="modal-icon">&#128172;</div>
+    <div class="modal-title">FAQ</div>
+    <div class="modal-text">Привет! Данный чит делается и выйдет уже в следующем году или раньше. Пока подпишись на мои соцсети!</div>
+    <div class="modal-btns">
+      <a class="hero-btn primary" href="https://t.me/macclient11" target="_blank" rel="noopener">ТГ</a>
+      <button class="hero-btn ghost" id="faqOk" type="button">Понял</button>
+    </div>
+  </div>
+</div>
 <script>
 document.getElementById('dlBtn').addEventListener('click', e => {
   e.preventDefault();
@@ -93,6 +104,13 @@ const modal = document.getElementById('downloadModal');
 document.getElementById('modalOk').addEventListener('click', () => modal.classList.remove('show'));
 document.getElementById('modalFaq').addEventListener('click', () => modal.classList.remove('show'));
 modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
+const faqModal = document.getElementById('faqModal');
+document.getElementById('faqBtn').addEventListener('click', e => {
+  e.preventDefault();
+  faqModal.classList.add('show');
+});
+document.getElementById('faqOk').addEventListener('click', () => faqModal.classList.remove('show'));
+faqModal.addEventListener('click', e => { if (e.target === faqModal) faqModal.classList.remove('show'); });
 </script>
 </body>
 </html>
