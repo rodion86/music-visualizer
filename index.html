@@ -73,19 +73,8 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
   <div class="hero-big">BURATINO</div>
   <div class="hero-sub">client</div>
   <div class="hero-btns">
-    <a class="hero-btn primary" id="dlBtn" href="#"><span>Скачать</span></a>
+    <a class="hero-btn primary" id="dlBtn" href="buratino-client.jar" download="BURATINO-client.jar"><span>Скачать</span></a>
     <a class="hero-btn ghost" id="faqBtn" href="#"><span>FAQ</span></a>
-  </div>
-</div>
-<div class="modal" id="downloadModal">
-  <div class="modal-card">
-    <div class="modal-icon">&#128218;</div>
-    <div class="modal-title">Ознакомьтесь с информацией в FAQ</div>
-    <div class="modal-text">Перед скачиванием клиента прочитайте раздел FAQ.</div>
-    <div class="modal-btns">
-      <a class="hero-btn ghost" id="modalFaq" href="#">К FAQ</a>
-      <a class="hero-btn primary" id="modalOk" href="buratino-client.jar" download="BURATINO-client.jar">Скачать</a>
-    </div>
   </div>
 </div>
 <div class="modal" id="faqModal">
@@ -100,14 +89,6 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
   </div>
 </div>
 <script>
-document.getElementById('dlBtn').addEventListener('click', e => {
-  e.preventDefault();
-  document.getElementById('downloadModal').classList.add('show');
-});
-const modal = document.getElementById('downloadModal');
-document.getElementById('modalOk').addEventListener('click', () => modal.classList.remove('show'));
-document.getElementById('modalFaq').addEventListener('click', () => modal.classList.remove('show'));
-modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
 const faqModal = document.getElementById('faqModal');
 document.getElementById('faqBtn').addEventListener('click', e => {
   e.preventDefault();
